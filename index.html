@@ -95,7 +95,7 @@
 <body>
 <div id="app">
   <header class="hdr">
-    <div class="hdr-t">🏠 <span id="appTitle">Bollette di Casa</span><span class="ver">v10</span></div>
+    <div class="hdr-t">🏠 <span id="appTitle">Bollette di Casa</span><span class="ver">v11</span></div>
     <button class="gear" onclick="togSet()"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
   </header>
   <div class="caw" id="caw" onclick="togSet()"></div>
@@ -121,7 +121,7 @@
     <div id="repE"><div class="empty"><div class="empty-i">📊</div><p data-i18n="noD">Registra le bollette per vedere il report</p></div></div>
     <div id="repC" style="display:none">
       <div class="mo-nav"><button onclick="navMo(-1)">◀</button><div class="mo-label" id="moLabel">Tutti</div><button onclick="navMo(1)">▶</button></div>
-      <div class="r-sum"><div class="sub" id="rSumLbl"></div><div class="big" id="rPP">--</div><div class="sub" id="rAb"></div></div>
+      <div class="r-sum"><div class="sub">Totale</div><div class="big" id="rTotal">--</div><div style="height:1px;background:rgba(255,255,255,.2);margin:8px 0"></div><div class="sub" id="rSumLbl"></div><div class="big" style="font-size:20px" id="rPP">--</div></div>
       <div class="r-row"><div class="r-st luce"><div class="lb" data-i18n="luce">Luce</div><div class="vl" id="rL">--</div></div><div class="r-st acqua"><div class="lb" data-i18n="acqua">Acqua</div><div class="vl" id="rA">--</div></div><div class="r-st gas"><div class="lb">Gas</div><div class="vl" id="rG">--</div></div></div>
       <div class="ch-tabs" id="chTabs"></div>
       <div class="ch-card"><div class="ch-tit" id="chTit"></div><canvas id="chCanvas"></canvas></div>
@@ -153,13 +153,13 @@ if(navigator.storage&&navigator.storage.persist)navigator.storage.persist();
 // ====== i18n ======
 const T={
 it:{luce:'Luce',acqua:'Acqua',iDate:'Data fattura',ab:'Abitanti',tap:'Tocca per registrare',rec:'Registrando...',hint:'"Luce 85, acqua 42, gas 63"',noMic:'Microfono non disponibile.',und:'Capito:',save:'Salva',nReg:'Registra',nSto:'Storico',nRep:'Report',cpp:'Costo per persona',noD:'Registra bollette per il report',cDel:'Eliminare?',cancel:'Annulla',del:'Elimina',edit:'Modifica',eRec:'Modifica',eOk:'Aggiornato!',sOk:'Salvato!',dOk:'Eliminato!',bOk:'Backup OK!',iOk:'Importato!',iFail:'Errore.',noH:'Nessun registro',fill1:'Compila almeno un valore',alreadyExists:'gia registrata! Modifica dallo Storico.',lng:'Lingua',title:'Bollette di Casa',xpdf:'Esporta PDF',xbk:'Esporta Backup',ibk:'Importa Backup',share:'Condividi',all:'Tutti',
-tBar:'€ / Mese',tDay:'€ / Giorno',tLine:'Andamento',tPie:'Distribuzione',tPerson:'Per Persona',
+tBar:'€ / Mese',tLine:'Andamento',tPie:'Distribuzione',tPerson:'Per Persona',
 sl:'it-IT',mn:['Gen','Feb','Mar','Apr','Mag','Giu','Lug','Ago','Set','Ott','Nov','Dic'],mf:['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno','Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre']},
 es:{luce:'Luz',acqua:'Agua',iDate:'Fecha factura',ab:'Habitantes',tap:'Toca para grabar',rec:'Grabando...',hint:'"Luz 85, agua 42, gas 63"',noMic:'Micro no disponible.',und:'Entendido:',save:'Guardar',nReg:'Registrar',nSto:'Historial',nRep:'Informe',cpp:'Coste por persona',noD:'Registra facturas',cDel:'Eliminar?',cancel:'Cancelar',del:'Eliminar',edit:'Editar',eRec:'Editar',eOk:'Actualizado!',sOk:'Guardado!',dOk:'Eliminado!',bOk:'Backup OK!',iOk:'Importado!',iFail:'Error.',noH:'Sin registros',fill1:'Rellena al menos uno',alreadyExists:'ya registrada! Edita desde Historial.',lng:'Idioma',title:'Facturas de Casa',xpdf:'Exportar PDF',xbk:'Exportar Backup',ibk:'Importar Backup',share:'Compartir',all:'Todos',
-tBar:'€ / Mes',tDay:'€ / Dia',tLine:'Evolucion',tPie:'Distribucion',tPerson:'Por Persona',
+tBar:'€ / Mes',tLine:'Evolucion',tPie:'Distribucion',tPerson:'Por Persona',
 sl:'es-ES',mn:['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'],mf:['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre']},
 pt:{luce:'Luz',acqua:'Agua',iDate:'Data fatura',ab:'Moradores',tap:'Toque para gravar',rec:'Gravando...',hint:'"Luz 85, agua 42, gas 63"',noMic:'Micro indisponivel.',und:'Entendi:',save:'Salvar',nReg:'Registrar',nSto:'Historico',nRep:'Relatorio',cpp:'Custo por pessoa',noD:'Registre contas',cDel:'Apagar?',cancel:'Cancelar',del:'Apagar',edit:'Editar',eRec:'Editar',eOk:'Atualizado!',sOk:'Salvo!',dOk:'Apagado!',bOk:'Backup OK!',iOk:'Importado!',iFail:'Erro.',noH:'Sem registros',fill1:'Preencha pelo menos um',alreadyExists:'ja registrada! Edite pelo Historico.',lng:'Idioma',title:'Contas da Casa',xpdf:'Exportar PDF',xbk:'Exportar Backup',ibk:'Importar Backup',share:'Compartilhar',all:'Todos',
-tBar:'€ / Mes',tDay:'€ / Dia',tLine:'Evolucao',tPie:'Distribuicao',tPerson:'Por Pessoa',
+tBar:'€ / Mes',tLine:'Evolucao',tPie:'Distribuicao',tPerson:'Por Pessoa',
 sl:'pt-PT',mn:['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'],mf:['Janeiro','Fevereiro','Marco','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro']}
 };
 let lang=localStorage.getItem('bl')||'it';
@@ -284,8 +284,8 @@ async function dEdit(){
 }
 
 // ====== REPORT ======
-let chart=null,curTab='bar',moIdx=-1,allMonths=[],allRecs=[],lineFilter='all';
-const TABS=['bar','daily','line','pie','person'];
+let chart=null,curTab='bar',moIdx=-1,allMonths=[],allRecs=[],lineFilter='all3';
+const TABS=['bar','line','pie','person'];
 
 function navMo(dir){
   moIdx+=dir;
@@ -307,11 +307,12 @@ async function rRep(){
 
   let sL=0,sA=0,sG=0;filt.forEach(r=>{sL+=r.luce;sA+=r.acqua;sG+=r.gas});
   const sT=sL+sA+sG,avgAb=filt.reduce((s,r)=>s+r.abitanti,0)/filt.length||4,nMo=filt.length||1;
+  $('rTotal').textContent=sT.toFixed(2)+' €';
   $('rSumLbl').textContent=t('cpp')+' ('+Math.round(avgAb)+' '+t('ab')+')';
   $('rPP').textContent=(sT/nMo/avgAb).toFixed(2)+' €';
   $('rL').textContent=sL.toFixed(2)+'€';$('rA').textContent=sA.toFixed(2)+'€';$('rG').textContent=sG.toFixed(2)+'€';
 
-  const tn={bar:t('tBar'),daily:t('tDay'),line:t('tLine'),pie:t('tPie'),person:t('tPerson')};
+  const tn={bar:t('tBar'),line:t('tLine'),pie:t('tPie'),person:t('tPerson')};
   $('chTabs').innerHTML=TABS.map(tb=>`<button class="ch-tab${tb===curTab?' on':''}" onclick="curTab='${tb}';rRep()">${tn[tb]}</button>`).join('');
   drawCh(filt);
 }
@@ -331,45 +332,21 @@ function drawCh(recs){
       {label:t('acqua'),data:dA,backgroundColor:'#06b6d4',borderRadius:4},
       {label:'Gas',data:dG,backgroundColor:'#f43f5e',borderRadius:4}
     ]},options:bOpt(dlIn)});
-  }else if(curTab==='daily'){
-    // LINE chart — daily cost based on period between invoices
-    // Always use ALL records for daily calc (need previous period)
-    $('chTit').textContent=t('tDay');
-    const src=allRecs;
-    const dyL=[],dyA=[],dyG=[],dyT=[],lb=[];
-    for(let i=1;i<src.length;i++){
-      const dl=dBt(src[i-1].luceDate,src[i].luceDate)||30;
-      const da=dBt(src[i-1].acquaDate,src[i].acquaDate)||30;
-      const dg=dBt(src[i-1].gasDate,src[i].gasDate)||30;
-      const vl=src[i].luce?+(src[i].luce/dl).toFixed(2):0;
-      const va=src[i].acqua?+(src[i].acqua/da).toFixed(2):0;
-      const vg=src[i].gas?+(src[i].gas/dg).toFixed(2):0;
-      dyL.push(vl);dyA.push(va);dyG.push(vg);dyT.push(+(vl+va+vg).toFixed(2));
-      lb.push(fMoS(src[i].month));
-    }
-    const dlDay={display:ctx=>ctx.dataset.data[ctx.dataIndex]>0,font:{size:9,weight:'bold'},anchor:'end',align:'top',formatter:v=>v.toFixed(2)+'€'};
-    chart=new Chart(cv,{type:'line',data:{labels:lb,datasets:[
-      {label:t('luce'),data:dyL,borderColor:'#f59e0b',backgroundColor:'rgba(245,158,11,.1)',borderWidth:2.5,pointRadius:5,pointBackgroundColor:'#f59e0b',tension:.3,fill:false,datalabels:{color:'#f59e0b',...dlDay}},
-      {label:t('acqua'),data:dyA,borderColor:'#06b6d4',backgroundColor:'rgba(6,182,212,.1)',borderWidth:2.5,pointRadius:5,pointBackgroundColor:'#06b6d4',tension:.3,fill:false,datalabels:{color:'#06b6d4',...dlDay}},
-      {label:'Gas',data:dyG,borderColor:'#f43f5e',backgroundColor:'rgba(244,63,94,.1)',borderWidth:2.5,pointRadius:5,pointBackgroundColor:'#f43f5e',tension:.3,fill:false,datalabels:{color:'#f43f5e',...dlDay}},
-      {label:'Total',data:dyT,borderColor:'#6366f1',borderWidth:3,pointRadius:6,pointBackgroundColor:'#6366f1',tension:.3,fill:true,backgroundColor:'rgba(99,102,241,.08)',datalabels:{color:'#6366f1',font:{size:10,weight:'bold'},anchor:'end',align:'top',formatter:v=>v.toFixed(2)+'€'}}
-    ]},options:bOpt({display:false})});
   }else if(curTab==='line'){
-    // Andamento — always all records, with filter buttons
-    const fBtns=['all','luce','acqua','gas'].map(f=>{
-      const lb={'all':t('all'),'luce':t('luce'),'acqua':t('acqua'),'gas':'Gas'}[f];
+    // Andamento — always all records, filter: Luce/Acqua/Gas (no Tutti)
+    const fBtns=['all3','luce','acqua','gas'].map(f=>{
+      const lb={'all3':'⚡💧🔥','luce':t('luce'),'acqua':t('acqua'),'gas':'Gas'}[f];
       const cl=f===lineFilter?'on':'';
       return `<button class="ch-tab ${cl}" style="padding:4px 10px;font-size:10px" onclick="lineFilter='${f}';rRep()">${lb}</button>`;
     }).join('');
     $('chTit').innerHTML=t('tLine')+' <span style="float:right;display:flex;gap:3px">'+fBtns+'</span>';
     const src=allRecs,lb2=src.map(r=>fMoS(r.month));
-    const aL=src.map(r=>r.luce),aA=src.map(r=>r.acqua),aG=src.map(r=>r.gas),aT=src.map(r=>r.luce+r.acqua+r.gas);
+    const aL=src.map(r=>r.luce),aA=src.map(r=>r.acqua),aG=src.map(r=>r.gas);
     const dlL={display:ctx=>ctx.dataset.data[ctx.dataIndex]>0,font:{size:9,weight:'bold'},anchor:'end',align:'top',formatter:v=>v.toFixed(0)+'€'};
     const ds=[];
-    if(lineFilter==='all'||lineFilter==='luce')ds.push({label:t('luce'),data:aL,borderColor:'#f59e0b',borderWidth:2.5,pointRadius:5,pointBackgroundColor:'#f59e0b',tension:.3,fill:lineFilter==='luce',backgroundColor:'rgba(245,158,11,.1)',datalabels:{color:'#f59e0b',...dlL}});
-    if(lineFilter==='all'||lineFilter==='acqua')ds.push({label:t('acqua'),data:aA,borderColor:'#06b6d4',borderWidth:2.5,pointRadius:5,pointBackgroundColor:'#06b6d4',tension:.3,fill:lineFilter==='acqua',backgroundColor:'rgba(6,182,212,.1)',datalabels:{color:'#06b6d4',...dlL}});
-    if(lineFilter==='all'||lineFilter==='gas')ds.push({label:'Gas',data:aG,borderColor:'#f43f5e',borderWidth:2.5,pointRadius:5,pointBackgroundColor:'#f43f5e',tension:.3,fill:lineFilter==='gas',backgroundColor:'rgba(244,63,94,.1)',datalabels:{color:'#f43f5e',...dlL}});
-    if(lineFilter==='all')ds.unshift({label:'Total',data:aT,borderColor:'#6366f1',backgroundColor:'rgba(99,102,241,.1)',fill:true,tension:.3,pointRadius:5,borderWidth:2.5,datalabels:{color:'#6366f1',...dlL}});
+    if(lineFilter==='all3'||lineFilter==='luce')ds.push({label:t('luce'),data:aL,borderColor:'#f59e0b',borderWidth:2.5,pointRadius:5,pointBackgroundColor:'#f59e0b',tension:.3,fill:lineFilter==='luce',backgroundColor:'rgba(245,158,11,.1)',datalabels:{color:'#f59e0b',...dlL}});
+    if(lineFilter==='all3'||lineFilter==='acqua')ds.push({label:t('acqua'),data:aA,borderColor:'#06b6d4',borderWidth:2.5,pointRadius:5,pointBackgroundColor:'#06b6d4',tension:.3,fill:lineFilter==='acqua',backgroundColor:'rgba(6,182,212,.1)',datalabels:{color:'#06b6d4',...dlL}});
+    if(lineFilter==='all3'||lineFilter==='gas')ds.push({label:'Gas',data:aG,borderColor:'#f43f5e',borderWidth:2.5,pointRadius:5,pointBackgroundColor:'#f43f5e',tension:.3,fill:lineFilter==='gas',backgroundColor:'rgba(244,63,94,.1)',datalabels:{color:'#f43f5e',...dlL}});
     chart=new Chart(cv,{type:'line',data:{labels:lb2,datasets:ds},options:bOpt({display:false})});
   }else if(curTab==='pie'){
     $('chTit').textContent=t('tPie');
