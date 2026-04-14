@@ -425,16 +425,24 @@ async function saveRecord(){
   const gas=parseFloat(document.getElementById('inGas').value)||0;
   if(luce===0&&acqua===0&&gas===0){toast(t('fillOne'),'error');return}
   const today=new Date().toISOString().slice(0,10);
-  await db.records.add({
-    luce,luceDate:document.getElementById('inLuceDate').value||today,
-    acqua,acquaDate:document.getElementById('inAcquaDate').value||today,
-    gas,gasDate:document.getElementById('inGasDate').value||today,
-    abitanti,createdAt:new Date().toISOString()
-  });
-  toast(t('savedOk'),'success');
-  ['inLuce','inAcqua','inGas'].forEach(id=>document.getElementById(id).value='');
-  document.getElementById('transcript').classList.remove('show');
-  checkDirty();
+  try{
+    await db.records.add({
+      luce,luceDate:document.getElementById('inLuceDate').value||today,
+      acqua,acquaDate:document.getElementById('inAcquaDate').value||today,
+      gas,gasDate:document.getElementById('inGasDate').value||today,
+      abitanti,createdAt:new Date().toISOString()
+    });
+    toast(t('savedOk'),'success');
+    ['inLuce','inAcqua','inGas'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('transcript').classList.remove('show');
+    checkDirty();
+    // Force refresh history and report so data is ready when user navigates
+    refreshHistory();
+    refreshReport();
+  }catch(e){
+    console.error('Save failed:',e);
+    toast('Errore: '+e.message,'error');
+  }
 }
 
 let delId=null,editId=null;
@@ -456,7 +464,7 @@ async function refreshHistory(){
 }
 function openDel(id,label){delId=id;document.getElementById('delModalText').textContent=label;document.getElementById('delModal').classList.add('show')}
 function closeDel(){delId=null;document.getElementById('delModal').classList.remove('show')}
-async function doDel(){if(delId)await db.records.delete(delId);closeDel();toast(t('deletedOk'),'success');refreshHistory()}
+async function doDel(){if(delId)await db.records.delete(delId);closeDel();toast(t('deletedOk'),'success');refreshHistory();refreshReport()}
 async function openEdit(id){
   const r=await db.records.get(id);if(!r)return;
   editId=id;
@@ -473,7 +481,7 @@ async function doEdit(){
     acqua:parseFloat(document.getElementById('edAcqua').value)||0,acquaDate:document.getElementById('edAcquaDate').value,
     gas:parseFloat(document.getElementById('edGas').value)||0,gasDate:document.getElementById('edGasDate').value
   });
-  closeEdit();toast(t('editOk'),'success');refreshHistory();
+  closeEdit();toast(t('editOk'),'success');refreshHistory();refreshReport();
 }
 
 let chBar,chLine,chDaily,chPie;
