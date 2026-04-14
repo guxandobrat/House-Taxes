@@ -9,42 +9,24 @@
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏠</text></svg>">
 <script src="https://cdn.jsdelivr.net/npm/dexie@3/dist/dexie.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js"></script>
 <style>
-:root{--pri:#6366f1;--pri-l:#a5b4fc;--pri-d:#4f46e5;--pri-g:rgba(99,102,241,.25);--luce:#f59e0b;--luce-bg:#fffbeb;--acqua:#06b6d4;--acqua-bg:#ecfeff;--gas:#f43f5e;--gas-bg:#fff1f2;--bg:#f1f5f9;--card:#fff;--tx:#1e293b;--tx2:#64748b;--tx3:#94a3b8;--brd:#e2e8f0;--ok:#10b981;--err:#ef4444;--r:16px;--rs:10px;--sh:0 1px 3px rgba(0,0,0,.06);--sh2:0 4px 12px rgba(0,0,0,.07);--navh:68px;--hdrh:56px}
-*{margin:0;padding:0;box-sizing:border-box}
-html{font-size:16px;-webkit-tap-highlight-color:transparent}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--tx);min-height:100dvh;overflow:hidden}
-input,select,button{font-family:inherit}
+:root{--pri:#6366f1;--pri-l:#a5b4fc;--pri-d:#4f46e5;--pri-g:rgba(99,102,241,.25);--luce:#f59e0b;--luce-bg:#fffbeb;--acqua:#06b6d4;--acqua-bg:#ecfeff;--gas:#f43f5e;--gas-bg:#fff1f2;--bg:#f1f5f9;--card:#fff;--tx:#1e293b;--tx2:#64748b;--tx3:#94a3b8;--brd:#e2e8f0;--ok:#10b981;--err:#ef4444;--r:16px;--rs:10px;--sh:0 1px 3px rgba(0,0,0,.06);--navh:68px;--hh:56px}
+*{margin:0;padding:0;box-sizing:border-box}body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--tx);min-height:100dvh;overflow:hidden}input,select,button{font-family:inherit}
 #app{max-width:480px;margin:0 auto;height:100dvh;display:flex;flex-direction:column;position:relative;background:var(--bg);overflow:hidden}
-
-.hdr{height:var(--hdrh);padding:0 16px;display:flex;align-items:center;justify-content:space-between;background:var(--card);border-bottom:1px solid var(--brd);flex-shrink:0;z-index:50}
+.hdr{height:var(--hh);padding:0 16px;display:flex;align-items:center;justify-content:space-between;background:var(--card);border-bottom:1px solid var(--brd);flex-shrink:0;z-index:50}
 .hdr-t{font-size:17px;font-weight:700;display:flex;align-items:center;gap:6px}
 .hdr-t .ver{font-size:9px;color:var(--tx3);font-weight:400}
-.gear{width:36px;height:36px;border-radius:50%;border:none;background:var(--bg);cursor:pointer;display:flex;align-items:center;justify-content:center}
-.gear:active{transform:scale(.9)}
-.gear svg{width:18px;height:18px;stroke:var(--tx2);fill:none;stroke-width:2}
-
-.spanel{position:absolute;top:var(--hdrh);right:10px;background:var(--card);border-radius:var(--r);box-shadow:0 8px 30px rgba(0,0,0,.12);padding:14px;z-index:200;min-width:180px;opacity:0;transform:translateY(-8px) scale(.95);pointer-events:none;transition:all .2s}
-.spanel.open{opacity:1;transform:translateY(0) scale(1);pointer-events:auto}
-.spanel h4{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--tx3);margin-bottom:8px}
-.lopt{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:var(--rs);cursor:pointer;margin-bottom:2px;font-size:13px;font-weight:500;color:var(--tx2)}
-.lopt:hover{background:var(--bg)}
-.lopt.on{background:#eef2ff;color:var(--pri)}
-.lopt .ck{margin-left:auto;opacity:0;font-weight:700;color:var(--pri)}
-.lopt.on .ck{opacity:1}
-
-.scr{display:none;flex-direction:column;flex:1;overflow-y:auto;padding:12px 16px calc(var(--navh)+16px);-webkit-overflow-scrolling:touch}
-.scr.on{display:flex;animation:fi .25s ease}
+.gear{width:36px;height:36px;border-radius:50%;border:none;background:var(--bg);cursor:pointer;display:flex;align-items:center;justify-content:center}.gear:active{transform:scale(.9)}.gear svg{width:18px;height:18px;stroke:var(--tx2);fill:none;stroke-width:2}
+.sp{position:absolute;top:var(--hh);right:10px;background:var(--card);border-radius:var(--r);box-shadow:0 8px 30px rgba(0,0,0,.12);padding:14px;z-index:200;min-width:180px;opacity:0;transform:translateY(-8px) scale(.95);pointer-events:none;transition:all .2s}.sp.open{opacity:1;transform:translateY(0) scale(1);pointer-events:auto}
+.sp h4{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--tx3);margin-bottom:8px}
+.lo{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:var(--rs);cursor:pointer;margin-bottom:2px;font-size:13px;font-weight:500;color:var(--tx2)}.lo:hover{background:var(--bg)}.lo.on{background:#eef2ff;color:var(--pri)}.lo .ck{margin-left:auto;opacity:0;font-weight:700;color:var(--pri)}.lo.on .ck{opacity:1}
+.scr{display:none;flex-direction:column;flex:1;overflow-y:auto;padding:12px 16px calc(var(--navh)+16px);-webkit-overflow-scrolling:touch}.scr.on{display:flex;animation:fi .25s ease}
 @keyframes fi{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
 @keyframes ci{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
-
 .nav{display:flex;background:var(--card);border-top:1px solid var(--brd);padding:6px 0 env(safe-area-inset-bottom,12px);position:absolute;bottom:0;left:0;right:0;z-index:100;height:var(--navh)}
-.nb{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;background:none;border:none;cursor:pointer;color:var(--tx3);font-size:10px;font-weight:600}
-.nb svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.8}
-.nb.on{color:var(--pri)}
-
-/* UTILITY CARDS */
+.nb{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;background:none;border:none;cursor:pointer;color:var(--tx3);font-size:10px;font-weight:600}.nb svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.8}.nb.on{color:var(--pri)}
 .uc{background:var(--card);border-radius:var(--r);padding:14px;margin-bottom:10px;box-shadow:var(--sh);border-left:4px solid transparent;animation:ci .35s ease both}
 .uc:nth-child(1){animation-delay:.03s}.uc:nth-child(2){animation-delay:.08s}.uc:nth-child(3){animation-delay:.13s}
 .uc.luce{border-left-color:var(--luce)}.uc.acqua{border-left-color:var(--acqua)}.uc.gas{border-left-color:var(--gas)}
@@ -59,109 +41,53 @@ input,select,button{font-family:inherit}
 .uf input:focus{border-color:var(--pri);background:var(--card);box-shadow:0 0 0 3px var(--pri-g)}
 .uf input[type=number]{font-weight:600;font-size:16px}
 .eur-w{position:relative}.eur-w::after{content:'€';position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:13px;color:var(--tx3);font-weight:600;pointer-events:none}.eur-w input{padding-right:28px}
-
-/* ABITANTI */
 .ab-row{display:flex;align-items:center;justify-content:space-between;background:var(--card);border-radius:var(--r);padding:12px 14px;margin-bottom:10px;box-shadow:var(--sh);animation:ci .35s ease both;animation-delay:.18s}
 .ab-row span{font-size:13px;font-weight:600}
 .ab-st{display:flex;align-items:center;gap:10px}
-.sb{width:30px;height:30px;border-radius:50%;border:1.5px solid var(--brd);background:var(--bg);font-size:16px;font-weight:600;color:var(--tx2);cursor:pointer;display:flex;align-items:center;justify-content:center}
-.sb:active{background:var(--pri-l);color:#fff;border-color:var(--pri)}
+.sb{width:30px;height:30px;border-radius:50%;border:1.5px solid var(--brd);background:var(--bg);font-size:16px;font-weight:600;color:var(--tx2);cursor:pointer;display:flex;align-items:center;justify-content:center}.sb:active{background:var(--pri-l);color:#fff;border-color:var(--pri)}
 .ab-v{font-size:18px;font-weight:700;min-width:20px;text-align:center}
-
-/* MIC */
 .mic-s{display:flex;flex-direction:column;align-items:center;padding:12px 0 8px;animation:ci .35s ease both;animation-delay:.23s}
-.mic-b{width:56px;height:56px;border-radius:50%;border:none;background:linear-gradient(135deg,var(--pri),var(--pri-d));box-shadow:0 4px 16px var(--pri-g);cursor:pointer;display:flex;align-items:center;justify-content:center}
-.mic-b svg{width:22px;height:22px;stroke:#fff;fill:none;stroke-width:2}
-.mic-b:active{transform:scale(.92)}
-.mic-b.rec{background:linear-gradient(135deg,var(--err),#dc2626);animation:mp 1.2s infinite}
+.mic-b{width:56px;height:56px;border-radius:50%;border:none;background:linear-gradient(135deg,var(--pri),var(--pri-d));box-shadow:0 4px 16px var(--pri-g);cursor:pointer;display:flex;align-items:center;justify-content:center}.mic-b svg{width:22px;height:22px;stroke:#fff;fill:none;stroke-width:2}.mic-b:active{transform:scale(.92)}.mic-b.rec{background:linear-gradient(135deg,var(--err),#dc2626);animation:mp 1.2s infinite}
 @keyframes mp{0%,100%{box-shadow:0 4px 16px rgba(239,68,68,.3)}50%{box-shadow:0 4px 32px rgba(239,68,68,.5)}}
 .mic-l{font-size:11px;color:var(--tx3);margin-top:6px;font-weight:500}
 .mic-h{font-size:10px;color:var(--tx3);font-style:italic;opacity:.7}
 .au{font-size:11px;color:#b45309;background:var(--luce-bg);padding:8px 12px;border-radius:var(--rs);text-align:center;margin-bottom:10px;display:none}
-
-.trsc{background:var(--luce-bg);border:1px solid #fde68a;border-radius:var(--rs);padding:10px;margin-bottom:10px;font-size:12px;color:#92400e;display:none}
-.trsc.show{display:block}
-.trsc b{font-size:10px;display:block;margin-bottom:3px;text-transform:uppercase;letter-spacing:.4px}
-
-/* SAVE FLOAT */
+.trsc{background:var(--luce-bg);border:1px solid #fde68a;border-radius:var(--rs);padding:10px;margin-bottom:10px;font-size:12px;color:#92400e;display:none}.trsc.show{display:block}.trsc b{font-size:10px;display:block;margin-bottom:3px;text-transform:uppercase;letter-spacing:.4px}
+/* SAVE */
 .sf{position:fixed;bottom:calc(var(--navh)+12px);left:50%;max-width:440px;width:calc(100% - 32px);transform:translateX(-50%) translateY(100px);opacity:0;pointer-events:none;z-index:90;transition:all .35s cubic-bezier(.4,0,.2,1);display:flex;gap:8px}
 .sf.pop{transform:translateX(-50%) translateY(0);opacity:1;pointer-events:auto}
-.sv-btn{flex:1;padding:14px;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;background:linear-gradient(135deg,var(--ok),#059669);color:#fff;box-shadow:0 6px 24px rgba(16,185,129,.35);transition:all .2s}
-.sv-btn:active{transform:scale(.97)}
-.sv-btn svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2.5}
-.sh-btn{padding:14px 16px;border:none;border-radius:12px;background:#25D366;color:#fff;font-size:15px;font-weight:700;cursor:pointer;display:none;align-items:center;justify-content:center;gap:6px;box-shadow:0 4px 20px rgba(37,211,102,.3)}
-.sh-btn:active{transform:scale(.97)}
-.sf.shared .sh-btn{display:flex}
-.sf.shared .sv-btn{display:none}
-
+.sv-btn{flex:1;padding:14px;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;background:linear-gradient(135deg,var(--ok),#059669);color:#fff;box-shadow:0 6px 24px rgba(16,185,129,.35);transition:all .2s}.sv-btn:active{transform:scale(.97)}.sv-btn svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2.5}
+.sh-btn{padding:14px 16px;border:none;border-radius:12px;background:#25D366;color:#fff;font-size:15px;font-weight:700;cursor:pointer;display:none;align-items:center;justify-content:center;gap:6px;box-shadow:0 4px 20px rgba(37,211,102,.3)}.sh-btn:active{transform:scale(.97)}.sf.shared .sh-btn{display:flex}.sf.shared .sv-btn{display:none}
 /* STORICO */
-.mo-hdr{font-size:13px;font-weight:700;color:var(--tx2);text-transform:uppercase;letter-spacing:.8px;padding:16px 0 8px;display:flex;align-items:center;gap:8px}
-.mo-hdr::after{content:'';flex:1;height:1px;background:var(--brd)}
+.mo-hdr{font-size:13px;font-weight:700;color:var(--tx2);text-transform:uppercase;letter-spacing:.8px;padding:16px 0 8px;display:flex;align-items:center;gap:8px}.mo-hdr::after{content:'';flex:1;height:1px;background:var(--brd)}
 .s-card{background:var(--card);border-radius:var(--r);padding:14px;margin-bottom:10px;box-shadow:var(--sh);animation:ci .3s ease both}
-.s-row{display:flex;align-items:center;gap:10px;padding:6px 0}
-.s-row+.s-row{border-top:1px solid var(--bg)}
-.s-ico{font-size:16px;width:24px;text-align:center}
-.s-nm{font-size:13px;font-weight:600;flex:1}
-.s-val{font-size:15px;font-weight:700;text-align:right}
-.s-dt{font-size:10px;color:var(--tx3);margin-left:4px}
-.s-zero{color:var(--tx3)!important;font-weight:400!important}
-.s-zero .s-nm,.s-zero .s-val,.s-zero .s-ico{opacity:.4}
+.s-row{display:flex;align-items:center;gap:10px;padding:6px 0}.s-row+.s-row{border-top:1px solid var(--bg)}
+.s-ico{font-size:16px;width:24px;text-align:center}.s-nm{font-size:13px;font-weight:600;flex:1}.s-val{font-size:15px;font-weight:700;text-align:right}.s-dt{font-size:10px;color:var(--tx3);margin-left:4px}
+.s-zero{opacity:.35}
 .s-acts{display:flex;gap:6px;padding-top:10px;margin-top:6px;border-top:1px solid var(--bg)}
-.sa{flex:1;padding:7px;border:none;border-radius:var(--rs);font-size:11px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px}
-.sa:active{transform:scale(.95)}
-.sa svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2}
-.sa-ed{background:#eef2ff;color:var(--pri)}
-.sa-del{background:var(--gas-bg);color:var(--err)}
-.sa-sh{background:#dcfce7;color:#16a34a}
-
+.sa{flex:1;padding:7px;border:none;border-radius:var(--rs);font-size:11px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px}.sa:active{transform:scale(.95)}.sa svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2}
+.sa-ed{background:#eef2ff;color:var(--pri)}.sa-del{background:var(--gas-bg);color:var(--err)}.sa-sh{background:#dcfce7;color:#16a34a}
 /* REPORT */
-.r-sum{background:linear-gradient(135deg,var(--pri),#4338ca);border-radius:var(--r);padding:18px;margin-bottom:12px;color:#fff;text-align:center}
-.r-sum .big{font-size:26px;font-weight:800;margin:4px 0}
-.r-sum .sub{font-size:11px;opacity:.8}
+.r-sum{background:linear-gradient(135deg,var(--pri),#4338ca);border-radius:var(--r);padding:18px;margin-bottom:12px;color:#fff;text-align:center}.r-sum .big{font-size:26px;font-weight:800;margin:4px 0}.r-sum .sub{font-size:11px;opacity:.8}
 .r-row{display:flex;gap:6px;margin-bottom:12px}
-.r-st{flex:1;background:var(--card);border-radius:var(--rs);padding:12px 8px;text-align:center;box-shadow:var(--sh)}
-.r-st .lb{font-size:9px;color:var(--tx3);font-weight:600;text-transform:uppercase;letter-spacing:.4px}
-.r-st .vl{font-size:16px;font-weight:800;margin-top:3px}
-.r-st.luce .vl{color:var(--luce)}.r-st.acqua .vl{color:var(--acqua)}.r-st.gas .vl{color:var(--gas)}
-
-/* CHART TABS */
+.r-st{flex:1;background:var(--card);border-radius:var(--rs);padding:12px 8px;text-align:center;box-shadow:var(--sh)}.r-st .lb{font-size:9px;color:var(--tx3);font-weight:600;text-transform:uppercase;letter-spacing:.4px}.r-st .vl{font-size:16px;font-weight:800;margin-top:3px}.r-st.luce .vl{color:var(--luce)}.r-st.acqua .vl{color:var(--acqua)}.r-st.gas .vl{color:var(--gas)}
+/* MONTH NAV */
+.mo-nav{display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:12px;background:var(--card);border-radius:var(--r);padding:10px;box-shadow:var(--sh)}
+.mo-nav button{width:32px;height:32px;border-radius:50%;border:1.5px solid var(--brd);background:var(--bg);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;color:var(--tx2)}.mo-nav button:active{background:var(--pri-l);color:#fff}
+.mo-nav .mo-label{font-size:14px;font-weight:700;min-width:140px;text-align:center}
+/* TABS */
 .ch-tabs{display:flex;gap:4px;margin-bottom:12px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:2px}
-.ch-tab{padding:8px 12px;border:none;border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap;background:var(--card);color:var(--tx3);box-shadow:var(--sh);transition:all .2s}
-.ch-tab.on{background:var(--pri);color:#fff;box-shadow:0 2px 12px var(--pri-g)}
-
-.ch-card{background:var(--card);border-radius:var(--r);padding:14px;margin-bottom:12px;box-shadow:var(--sh)}
-.ch-tit{font-size:12px;font-weight:700;color:var(--tx2);margin-bottom:10px}
-.ch-card canvas{max-height:220px}
-
-.rb{width:100%;padding:12px;border-radius:12px;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:all .2s;margin-bottom:6px;border:none}
-.rb:active{transform:scale(.97)}
-.rb svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2}
-.rb-pdf{background:var(--pri);color:#fff}
-.rb-bk{background:var(--bg);color:var(--tx2);border:1.5px solid var(--brd)!important}
-
-.empty{text-align:center;padding:40px 16px;color:var(--tx3)}
-.empty-i{font-size:40px;margin-bottom:10px;opacity:.5}
-.empty p{font-size:13px}
-
-/* MODAL */
-.mbg{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:300;display:none;align-items:flex-end;justify-content:center;backdrop-filter:blur(4px)}
-.mbg.show{display:flex}
+.ch-tab{padding:8px 12px;border:none;border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap;background:var(--card);color:var(--tx3);box-shadow:var(--sh);transition:all .2s}.ch-tab.on{background:var(--pri);color:#fff;box-shadow:0 2px 12px var(--pri-g)}
+.ch-card{background:var(--card);border-radius:var(--r);padding:14px;margin-bottom:12px;box-shadow:var(--sh)}.ch-tit{font-size:12px;font-weight:700;color:var(--tx2);margin-bottom:10px}.ch-card canvas{max-height:240px}
+.rb{width:100%;padding:12px;border-radius:12px;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:all .2s;margin-bottom:6px;border:none}.rb:active{transform:scale(.97)}.rb svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2}.rb-pdf{background:var(--pri);color:#fff}.rb-bk{background:var(--bg);color:var(--tx2);border:1.5px solid var(--brd)!important}
+.empty{text-align:center;padding:40px 16px;color:var(--tx3)}.empty-i{font-size:40px;margin-bottom:10px;opacity:.5}.empty p{font-size:13px}
+.mbg{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:300;display:none;align-items:flex-end;justify-content:center;backdrop-filter:blur(4px)}.mbg.show{display:flex}
 .mdl{background:var(--card);border-radius:var(--r) var(--r) 0 0;padding:20px 16px env(safe-area-inset-bottom,20px);max-width:480px;width:100%;animation:su .3s cubic-bezier(.4,0,.2,1)}
 @keyframes su{from{transform:translateY(100%)}to{transform:translateY(0)}}
-.mdl h3{font-size:15px;font-weight:700;margin-bottom:8px}
-.mdl p{font-size:13px;color:var(--tx2);margin-bottom:14px}
-.mbtn{display:flex;gap:6px}
-.mbtn button{flex:1;padding:11px;border-radius:12px;font-size:13px;font-weight:600;cursor:pointer;border:none}
-.mbtn .cn{background:var(--bg);color:var(--tx2)}
-.mbtn .dg{background:var(--err);color:#fff}
-.mbtn button:active{transform:scale(.96)}
-.fed{flex:1;padding:9px;border:1.5px solid var(--brd);border-radius:var(--rs);font-size:13px;background:var(--bg);outline:none;color:var(--tx)}
-.fed:focus{border-color:var(--pri)}
-
-.toast{position:fixed;top:calc(var(--hdrh)+10px);left:50%;transform:translateX(-50%) translateY(-20px);background:var(--tx);color:#fff;padding:8px 18px;border-radius:30px;font-size:12px;font-weight:600;opacity:0;transition:all .3s;pointer-events:none;z-index:500;white-space:nowrap}
-.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
-.toast.success{background:var(--ok)}.toast.error{background:var(--err)}
-
+.mdl h3{font-size:15px;font-weight:700;margin-bottom:8px}.mdl p{font-size:13px;color:var(--tx2);margin-bottom:14px}
+.mbtn{display:flex;gap:6px}.mbtn button{flex:1;padding:11px;border-radius:12px;font-size:13px;font-weight:600;cursor:pointer;border:none}.mbtn .cn{background:var(--bg);color:var(--tx2)}.mbtn .dg{background:var(--err);color:#fff}.mbtn button:active{transform:scale(.96)}
+.fed{flex:1;padding:9px;border:1.5px solid var(--brd);border-radius:var(--rs);font-size:13px;background:var(--bg);outline:none;color:var(--tx)}.fed:focus{border-color:var(--pri)}
+.toast{position:fixed;top:calc(var(--hh)+10px);left:50%;transform:translateX(-50%) translateY(-20px);background:var(--tx);color:#fff;padding:8px 18px;border-radius:30px;font-size:12px;font-weight:600;opacity:0;transition:all .3s;pointer-events:none;z-index:500;white-space:nowrap}.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}.toast.success{background:var(--ok)}.toast.error{background:var(--err)}
 .caw{position:fixed;inset:0;z-index:150;display:none}.caw.show{display:block}
 @media print{.nav,.hdr,.sf,.mic-s,.au{display:none!important}.scr{overflow:visible!important;padding-bottom:0!important}#app{height:auto;overflow:visible}}
 </style>
@@ -169,17 +95,15 @@ input,select,button{font-family:inherit}
 <body>
 <div id="app">
   <header class="hdr">
-    <div class="hdr-t">🏠 <span id="appTitle">Bollette di Casa</span> <span class="ver">v7</span></div>
+    <div class="hdr-t">🏠 <span id="appTitle">Bollette di Casa</span><span class="ver">v8</span></div>
     <button class="gear" onclick="togSet()"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
   </header>
   <div class="caw" id="caw" onclick="togSet()"></div>
-  <div class="spanel" id="sp">
-    <h4 id="spT">Lingua</h4>
-    <div class="lopt on" data-lang="it" onclick="setL('it')">🇮🇹 Italiano<span class="ck">✓</span></div>
-    <div class="lopt" data-lang="es" onclick="setL('es')">🇪🇸 Castellano<span class="ck">✓</span></div>
-    <div class="lopt" data-lang="pt" onclick="setL('pt')">🇧🇷 Portugues<span class="ck">✓</span></div>
+  <div class="sp" id="sp"><h4 id="spT">Lingua</h4>
+    <div class="lo on" data-lang="it" onclick="setL('it')">🇮🇹 Italiano<span class="ck">✓</span></div>
+    <div class="lo" data-lang="es" onclick="setL('es')">🇪🇸 Castellano<span class="ck">✓</span></div>
+    <div class="lo" data-lang="pt" onclick="setL('pt')">🇧🇷 Portugues<span class="ck">✓</span></div>
   </div>
-
   <!-- REGISTRA -->
   <div class="scr on" id="s-reg">
     <div class="uc luce"><div class="uc-h"><div class="uc-ico">⚡</div><div class="uc-nm" data-i18n="luce">Luce</div></div><div class="uc-f"><div class="uf" style="flex:1.2"><label>EUR</label><div class="eur-w"><input type="number" step="0.01" id="iL" placeholder="0.00" inputmode="decimal" oninput="chk()"></div></div><div class="uf"><label data-i18n="iDate">Data fattura</label><input type="date" id="iLD" oninput="chk()"></div></div></div>
@@ -187,376 +111,307 @@ input,select,button{font-family:inherit}
     <div class="uc gas"><div class="uc-h"><div class="uc-ico">🔥</div><div class="uc-nm">Gas</div></div><div class="uc-f"><div class="uf" style="flex:1.2"><label>EUR</label><div class="eur-w"><input type="number" step="0.01" id="iG" placeholder="0.00" inputmode="decimal" oninput="chk()"></div></div><div class="uf"><label data-i18n="iDate">Data fattura</label><input type="date" id="iGD" oninput="chk()"></div></div></div>
     <div class="ab-row"><span data-i18n="ab">Abitanti</span><div class="ab-st"><button class="sb" onclick="stAb(-1)">−</button><span class="ab-v" id="abV">4</span><button class="sb" onclick="stAb(1)">+</button></div></div>
     <div class="trsc" id="trsc"><b data-i18n="und">Capito:</b><div id="trT"></div></div>
-    <div class="mic-s" id="micS"><button class="mic-b" id="micB" onclick="togR()"><svg viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg></button><div class="mic-l" id="micL" data-i18n="tap">Tocca per registrare</div><div class="mic-h" data-i18n="hint">"Luce 85, acqua 42,50, gas 63"</div></div>
-    <div class="au" id="au" data-i18n="noMic">Riconoscimento vocale non disponibile.</div>
+    <div class="mic-s" id="micS"><button class="mic-b" id="micB" onclick="togR()"><svg viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg></button><div class="mic-l" id="micL" data-i18n="tap">Tocca per registrare</div><div class="mic-h" data-i18n="hint">"Luce 85, acqua 42, gas 63"</div></div>
+    <div class="au" id="au" data-i18n="noMic">Microfono non disponibile.</div>
   </div>
-
   <!-- STORICO -->
   <div class="scr" id="s-sto"><div id="hList"></div></div>
-
   <!-- REPORT -->
   <div class="scr" id="s-rep">
     <div id="repE"><div class="empty"><div class="empty-i">📊</div><p data-i18n="noD">Registra le bollette per vedere il report</p></div></div>
     <div id="repC" style="display:none">
-      <div class="r-sum"><div class="sub" data-i18n="cpp">Costo medio per persona / mese</div><div class="big" id="rPP">--</div><div class="sub" id="rAb"></div></div>
+      <div class="mo-nav"><button onclick="navMo(-1)">◀</button><div class="mo-label" id="moLabel">Tutti</div><button onclick="navMo(1)">▶</button></div>
+      <div class="r-sum"><div class="sub" id="rSumLbl"></div><div class="big" id="rPP">--</div><div class="sub" id="rAb"></div></div>
       <div class="r-row"><div class="r-st luce"><div class="lb" data-i18n="luce">Luce</div><div class="vl" id="rL">--</div></div><div class="r-st acqua"><div class="lb" data-i18n="acqua">Acqua</div><div class="vl" id="rA">--</div></div><div class="r-st gas"><div class="lb">Gas</div><div class="vl" id="rG">--</div></div></div>
       <div class="ch-tabs" id="chTabs"></div>
-      <div class="ch-card" id="chWrap"><div class="ch-tit" id="chTit"></div><canvas id="chCanvas"></canvas></div>
+      <div class="ch-card"><div class="ch-tit" id="chTit"></div><canvas id="chCanvas"></canvas></div>
       <button class="rb rb-pdf" onclick="expPDF()"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span data-i18n="xpdf">Esporta PDF</span></button>
       <button class="rb rb-bk" onclick="expBk()"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg><span data-i18n="xbk">Esporta Backup</span></button>
       <button class="rb rb-bk" onclick="$('impF').click()"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg><span data-i18n="ibk">Importa Backup</span></button>
       <input type="file" id="impF" accept=".json" style="display:none" onchange="impBk(event)">
     </div>
   </div>
-
-  <!-- SAVE FLOAT + SHARE -->
-  <div class="sf" id="sf">
-    <button class="sv-btn" onclick="save()"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg><span data-i18n="save">Salva</span></button>
-    <button class="sh-btn" id="shBtn" onclick="share()">📤 WhatsApp</button>
-  </div>
-
+  <div class="sf" id="sf"><button class="sv-btn" onclick="save()"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg><span data-i18n="save">Salva</span></button><button class="sh-btn" id="shBtn" onclick="doShare()">📤 WhatsApp</button></div>
   <div class="toast" id="toast"></div>
-
-  <!-- MODALS -->
   <div class="mbg" id="mDel"><div class="mdl"><h3 data-i18n="cDel">Eliminare?</h3><p id="mDelT"></p><div class="mbtn"><button class="cn" onclick="cDel()" data-i18n="cancel">Annulla</button><button class="dg" onclick="dDel()" data-i18n="del">Elimina</button></div></div></div>
   <div class="mbg" id="mEdit"><div class="mdl"><h3 data-i18n="eRec">Modifica</h3><div style="display:flex;flex-direction:column;gap:8px"><div style="display:flex;gap:6px;align-items:center"><span>⚡</span><input type="number" step="0.01" id="eL" class="fed" inputmode="decimal"><input type="date" id="eLD" class="fed"></div><div style="display:flex;gap:6px;align-items:center"><span>💧</span><input type="number" step="0.01" id="eA" class="fed" inputmode="decimal"><input type="date" id="eAD" class="fed"></div><div style="display:flex;gap:6px;align-items:center"><span>🔥</span><input type="number" step="0.01" id="eG" class="fed" inputmode="decimal"><input type="date" id="eGD" class="fed"></div></div><div class="mbtn" style="margin-top:14px"><button class="cn" onclick="cEdit()" data-i18n="cancel">Annulla</button><button class="dg" style="background:var(--pri)" onclick="dEdit()" data-i18n="save">Salva</button></div></div></div>
-
   <nav class="nav">
     <button class="nb on" data-s="reg"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg><span data-i18n="nReg">Registra</span></button>
     <button class="nb" data-s="sto"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg><span data-i18n="nSto">Storico</span></button>
     <button class="nb" data-s="rep"><svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg><span data-i18n="nRep">Report</span></button>
   </nav>
 </div>
-
 <script>
 const $=id=>document.getElementById(id);
-const db=new Dexie('BolletteCasaV3');
-db.version(1).stores({records:'++id,createdAt,luceDate,acquaDate,gasDate'});
-if(navigator.storage&&navigator.storage.persist)navigator.storage.persist();
 
-// i18n
-const L={
-it:{luce:'Luce',acqua:'Acqua',iDate:'Data fattura',ab:'Abitanti',tap:'Tocca per registrare',rec:'Registrando...',hint:'"Luce 85, acqua 42, gas 63"',noMic:'Microfono non disponibile.',und:'Capito:',save:'Salva',nReg:'Registra',nSto:'Storico',nRep:'Report',cpp:'Costo medio per persona / mese',noD:'Registra bollette per il report',cDel:'Eliminare questo registro?',cancel:'Annulla',del:'Elimina',edit:'Modifica',eRec:'Modifica registro',eOk:'Aggiornato!',sOk:'Salvato!',dOk:'Eliminato!',bOk:'Backup esportato!',iOk:'Importato!',iFail:'Errore importazione.',noH:'Nessun registro',fill1:'Compila almeno un valore',lng:'Lingua',title:'Bollette di Casa',xpdf:'Esporta PDF',xbk:'Esporta Backup',ibk:'Importa Backup',share:'Condividi',
-tBar:'Totale per Periodo',tDay:'Costo Giornaliero',tLine:'Andamento Totale',tPie:'Distribuzione',tPerson:'Per Persona / Mese',
-slang:'it-IT',mn:['Gen','Feb','Mar','Apr','Mag','Giu','Lug','Ago','Set','Ott','Nov','Dic'],mf:['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno','Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre']},
-es:{luce:'Luz',acqua:'Agua',iDate:'Fecha factura',ab:'Habitantes',tap:'Toca para grabar',rec:'Grabando...',hint:'"Luz 85, agua 42, gas 63"',noMic:'Microfono no disponible.',und:'Entendido:',save:'Guardar',nReg:'Registrar',nSto:'Historial',nRep:'Informe',cpp:'Coste medio por persona / mes',noD:'Registra facturas para el informe',cDel:'Eliminar este registro?',cancel:'Cancelar',del:'Eliminar',edit:'Editar',eRec:'Editar registro',eOk:'Actualizado!',sOk:'Guardado!',dOk:'Eliminado!',bOk:'Backup exportado!',iOk:'Importado!',iFail:'Error al importar.',noH:'Sin registros',fill1:'Rellena al menos un valor',lng:'Idioma',title:'Facturas de Casa',xpdf:'Exportar PDF',xbk:'Exportar Backup',ibk:'Importar Backup',share:'Compartir',
-tBar:'Total por Periodo',tDay:'Coste Diario',tLine:'Evolucion Total',tPie:'Distribucion',tPerson:'Por Persona / Mes',
-slang:'es-ES',mn:['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'],mf:['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre']},
-pt:{luce:'Luz',acqua:'Agua',iDate:'Data fatura',ab:'Moradores',tap:'Toque para gravar',rec:'Gravando...',hint:'"Luz 85, agua 42, gas 63"',noMic:'Microfone nao disponivel.',und:'Entendi:',save:'Salvar',nReg:'Registrar',nSto:'Historico',nRep:'Relatorio',cpp:'Custo medio por pessoa / mes',noD:'Registre contas para o relatorio',cDel:'Apagar este registro?',cancel:'Cancelar',del:'Apagar',edit:'Editar',eRec:'Editar registro',eOk:'Atualizado!',sOk:'Salvo!',dOk:'Apagado!',bOk:'Backup exportado!',iOk:'Importado!',iFail:'Erro ao importar.',noH:'Sem registros',fill1:'Preencha pelo menos um valor',lng:'Idioma',title:'Contas da Casa',xpdf:'Exportar PDF',xbk:'Exportar Backup',ibk:'Importar Backup',share:'Compartilhar',
-tBar:'Total por Periodo',tDay:'Custo Diario',tLine:'Evolucao Total',tPie:'Distribuicao',tPerson:'Por Pessoa / Mes',
-slang:'pt-PT',mn:['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'],mf:['Janeiro','Fevereiro','Marco','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro']}
+// ====== DATABASE: ONE RECORD PER MONTH ======
+const db=new Dexie('BolletteFinal');
+db.version(1).stores({records:'++id,&month'});
+if(navigator.storage&&navigator.storage.persist)navigator.storage.persist();
+// &month = unique index — only 1 record per month
+
+// ====== i18n ======
+const T={
+it:{luce:'Luce',acqua:'Acqua',iDate:'Data fattura',ab:'Abitanti',tap:'Tocca per registrare',rec:'Registrando...',hint:'"Luce 85, acqua 42, gas 63"',noMic:'Microfono non disponibile.',und:'Capito:',save:'Salva',nReg:'Registra',nSto:'Storico',nRep:'Report',cpp:'Costo per persona',noD:'Registra bollette per il report',cDel:'Eliminare?',cancel:'Annulla',del:'Elimina',edit:'Modifica',eRec:'Modifica',eOk:'Aggiornato!',sOk:'Salvato!',dOk:'Eliminato!',bOk:'Backup OK!',iOk:'Importato!',iFail:'Errore.',noH:'Nessun registro',fill1:'Compila almeno un valore',lng:'Lingua',title:'Bollette di Casa',xpdf:'Esporta PDF',xbk:'Esporta Backup',ibk:'Importa Backup',share:'Condividi',all:'Tutti',
+tBar:'€ / Mese',tDay:'€ / Giorno',tLine:'Andamento',tPie:'Distribuzione',tPerson:'Per Persona',
+sl:'it-IT',mn:['Gen','Feb','Mar','Apr','Mag','Giu','Lug','Ago','Set','Ott','Nov','Dic'],mf:['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno','Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre']},
+es:{luce:'Luz',acqua:'Agua',iDate:'Fecha factura',ab:'Habitantes',tap:'Toca para grabar',rec:'Grabando...',hint:'"Luz 85, agua 42, gas 63"',noMic:'Micro no disponible.',und:'Entendido:',save:'Guardar',nReg:'Registrar',nSto:'Historial',nRep:'Informe',cpp:'Coste por persona',noD:'Registra facturas',cDel:'Eliminar?',cancel:'Cancelar',del:'Eliminar',edit:'Editar',eRec:'Editar',eOk:'Actualizado!',sOk:'Guardado!',dOk:'Eliminado!',bOk:'Backup OK!',iOk:'Importado!',iFail:'Error.',noH:'Sin registros',fill1:'Rellena al menos uno',lng:'Idioma',title:'Facturas de Casa',xpdf:'Exportar PDF',xbk:'Exportar Backup',ibk:'Importar Backup',share:'Compartir',all:'Todos',
+tBar:'€ / Mes',tDay:'€ / Dia',tLine:'Evolucion',tPie:'Distribucion',tPerson:'Por Persona',
+sl:'es-ES',mn:['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'],mf:['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre']},
+pt:{luce:'Luz',acqua:'Agua',iDate:'Data fatura',ab:'Moradores',tap:'Toque para gravar',rec:'Gravando...',hint:'"Luz 85, agua 42, gas 63"',noMic:'Micro indisponivel.',und:'Entendi:',save:'Salvar',nReg:'Registrar',nSto:'Historico',nRep:'Relatorio',cpp:'Custo por pessoa',noD:'Registre contas',cDel:'Apagar?',cancel:'Cancelar',del:'Apagar',edit:'Editar',eRec:'Editar',eOk:'Atualizado!',sOk:'Salvo!',dOk:'Apagado!',bOk:'Backup OK!',iOk:'Importado!',iFail:'Erro.',noH:'Sem registros',fill1:'Preencha pelo menos um',lng:'Idioma',title:'Contas da Casa',xpdf:'Exportar PDF',xbk:'Exportar Backup',ibk:'Importar Backup',share:'Compartilhar',all:'Todos',
+tBar:'€ / Mes',tDay:'€ / Dia',tLine:'Evolucao',tPie:'Distribuicao',tPerson:'Por Pessoa',
+sl:'pt-PT',mn:['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'],mf:['Janeiro','Fevereiro','Marco','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro']}
 };
 let lang=localStorage.getItem('bl')||'it';
-const t=k=>(L[lang]&&L[lang][k])||L.it[k]||k;
-function apL(){
-  document.querySelectorAll('[data-i18n]').forEach(e=>{const v=t(e.getAttribute('data-i18n'));if(v)e.textContent=v});
-  $('appTitle').textContent=t('title');$('spT').textContent=t('lng');
-  document.querySelectorAll('.lopt').forEach(o=>o.classList.toggle('on',o.dataset.lang===lang));
-}
+const t=k=>(T[lang]&&T[lang][k])||T.it[k]||k;
+function apL(){document.querySelectorAll('[data-i18n]').forEach(e=>{const v=t(e.getAttribute('data-i18n'));if(v)e.textContent=v});$('appTitle').textContent=t('title');$('spT').textContent=t('lng');document.querySelectorAll('.lo').forEach(o=>o.classList.toggle('on',o.dataset.lang===lang))}
 function setL(l){lang=l;localStorage.setItem('bl',l);apL();rHist();rRep();togSet()}
+let sO=false;function togSet(){sO=!sO;$('sp').classList.toggle('open',sO);$('caw').classList.toggle('show',sO)}
 
-let sO=false;
-function togSet(){sO=!sO;$('sp').classList.toggle('open',sO);$('caw').classList.toggle('show',sO)}
-
-// NAV
-function go(s){
-  document.querySelectorAll('.scr').forEach(x=>x.classList.remove('on'));
-  $('s-'+s).classList.add('on');
-  document.querySelectorAll('.nb').forEach(b=>b.classList.remove('on'));
-  document.querySelector(`.nb[data-s="${s}"]`).classList.add('on');
-  if(s==='sto')rHist();if(s==='rep')rRep();
-  if(s!=='reg')$('sf').classList.remove('pop','shared');
-  else chk();
-}
+// ====== NAV ======
+function go(s){document.querySelectorAll('.scr').forEach(x=>x.classList.remove('on'));$('s-'+s).classList.add('on');document.querySelectorAll('.nb').forEach(b=>b.classList.remove('on'));document.querySelector(`.nb[data-s="${s}"]`).classList.add('on');if(s==='sto')rHist();if(s==='rep')rRep();if(s!=='reg')$('sf').classList.remove('pop','shared');else chk()}
 document.querySelectorAll('.nb').forEach(b=>b.addEventListener('click',()=>go(b.dataset.s)));
 
-// ABITANTI
-let ab=parseInt(localStorage.getItem('bab'))||4;
-$('abV').textContent=ab;
+let ab=parseInt(localStorage.getItem('bab'))||4;$('abV').textContent=ab;
 function stAb(d){ab=Math.max(1,Math.min(20,ab+d));$('abV').textContent=ab;localStorage.setItem('bab',ab)}
+function chk(){const d=$('iL').value||$('iA').value||$('iG').value;$('sf').classList.toggle('pop',!!d);$('sf').classList.remove('shared')}
 
-// DIRTY CHECK
-function chk(){
-  const d=$('iL').value||$('iA').value||$('iG').value;
-  $('sf').classList.toggle('pop',!!d);
-  $('sf').classList.remove('shared');
-}
+// ====== SPEECH ======
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition;let rc=null,isR=false;
+if(SR){rc=new SR();rc.continuous=true;rc.interimResults=true;rc.onresult=e=>{let t='';for(let i=0;i<e.results.length;i++)t+=e.results[i][0].transcript;$('trT').textContent=t;$('trsc').classList.add('show');pV(t)};rc.onerror=()=>stR();rc.onend=()=>{if(isR)stR()}}else{$('micS').style.display='none';$('au').style.display='block'}
+function togR(){isR?stR():staR()}function staR(){isR=true;rc.lang=t('sl');rc.start();$('micB').classList.add('rec');$('micL').textContent=t('rec')}function stR(){isR=false;try{rc.stop()}catch(e){}$('micB').classList.remove('rec');$('micL').textContent=t('tap')}
+function pV(raw){const s=raw.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');const kw={l:['luce','luz'],a:['acqua','agua'],g:['gas']};function gr(t,ws){for(const w of ws){const m=t.match(new RegExp(w+'[\\s\\w]{0,12}?(\\d+[,.]?\\d*)','i'));if(m)return parseFloat(m[1].replace(',','.'))}return null}const l=gr(s,kw.l),a=gr(s,kw.a),g=gr(s,kw.g);if(l!==null)$('iL').value=l;if(a!==null)$('iA').value=a;if(g!==null)$('iG').value=g;chk()}
 
-// SPEECH
-const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
-let rc=null,isR=false;
-if(SR){
-  rc=new SR();rc.continuous=true;rc.interimResults=true;
-  rc.onresult=e=>{let t='';for(let i=0;i<e.results.length;i++)t+=e.results[i][0].transcript;$('trT').textContent=t;$('trsc').classList.add('show');pVoice(t)};
-  rc.onerror=()=>stopR();rc.onend=()=>{if(isR)stopR()};
-}else{$('micS').style.display='none';$('au').style.display='block'}
-function togR(){isR?stopR():startR()}
-function startR(){isR=true;rc.lang=t('slang');rc.start();$('micB').classList.add('rec');$('micL').textContent=t('rec')}
-function stopR(){isR=false;try{rc.stop()}catch(e){}$('micB').classList.remove('rec');$('micL').textContent=t('tap')}
-function pVoice(raw){
-  const s=raw.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
-  const kw={l:['luce','luz','light'],a:['acqua','agua','water'],g:['gas']};
-  function gr(t,ws){for(const w of ws){const m=t.match(new RegExp(w+'[\\s\\w]{0,12}?(\\d+[,.]?\\d*)','i'));if(m)return parseFloat(m[1].replace(',','.'))}return null}
-  const l=gr(s,kw.l),a=gr(s,kw.a),g=gr(s,kw.g);
-  if(l!==null)$('iL').value=l;if(a!==null)$('iA').value=a;if(g!==null)$('iG').value=g;
-  chk();
-}
-
-// SAVE
+// ====== SAVE — UPSERT BY MONTH ======
 let lastSaved=null;
 async function save(){
   if(!$('sf').classList.contains('pop'))return;
-  const luce=parseFloat($('iL').value)||0,acqua=parseFloat($('iA').value)||0,gas=parseFloat($('iG').value)||0;
-  if(!luce&&!acqua&&!gas){toast(t('fill1'),'error');return}
   const td=new Date().toISOString().slice(0,10);
+  const entries=[
+    {k:'luce',v:parseFloat($('iL').value)||0,d:$('iLD').value||td,dk:'luceDate'},
+    {k:'acqua',v:parseFloat($('iA').value)||0,d:$('iAD').value||td,dk:'acquaDate'},
+    {k:'gas',v:parseFloat($('iG').value)||0,d:$('iGD').value||td,dk:'gasDate'}
+  ].filter(e=>e.v>0);
+  if(!entries.length){toast(t('fill1'),'error');return}
   try{
-    const rec={luce,luceDate:$('iLD').value||td,acqua,acquaDate:$('iAD').value||td,gas,gasDate:$('iGD').value||td,abitanti:ab,createdAt:new Date().toISOString()};
-    await db.records.add(rec);
-    lastSaved=rec;
+    // Group entries by month (YYYY-MM from their date)
+    const byMo={};
+    entries.forEach(e=>{const mo=e.d.slice(0,7);if(!byMo[mo])byMo[mo]={};byMo[mo][e.k]=e});
+    for(const[mo,utils]of Object.entries(byMo)){
+      const existing=await db.records.where('month').equals(mo).first();
+      if(existing){
+        const upd={updatedAt:new Date().toISOString()};
+        if(utils.luce){upd.luce=utils.luce.v;upd.luceDate=utils.luce.d}
+        if(utils.acqua){upd.acqua=utils.acqua.v;upd.acquaDate=utils.acqua.d}
+        if(utils.gas){upd.gas=utils.gas.v;upd.gasDate=utils.gas.d}
+        upd.abitanti=ab;
+        await db.records.update(existing.id,upd);
+      }else{
+        await db.records.add({month:mo,luce:utils.luce?utils.luce.v:0,luceDate:utils.luce?utils.luce.d:'',acqua:utils.acqua?utils.acqua.v:0,acquaDate:utils.acqua?utils.acqua.d:'',gas:utils.gas?utils.gas.v:0,gasDate:utils.gas?utils.gas.d:'',abitanti:ab,createdAt:new Date().toISOString()});
+      }
+    }
+    // Build lastSaved for sharing
+    const firstMo=Object.keys(byMo)[0];
+    lastSaved=await db.records.where('month').equals(firstMo).first();
     toast(t('sOk'),'success');
     ['iL','iA','iG'].forEach(id=>$(id).value='');
-    $('trsc').classList.remove('show');
-    $('iLD').value=td;$('iAD').value=td;$('iGD').value=td;
-    chk();
-    // Show share button
-    $('sf').classList.add('shared');
-    $('sf').classList.add('pop');
+    $('trsc').classList.remove('show');$('iLD').value=td;$('iAD').value=td;$('iGD').value=td;
+    chk();$('sf').classList.add('shared','pop');
     await rHist();await rRep();
-  }catch(e){console.error(e);toast('Errore: '+e.message,'error')}
+  }catch(e){console.error(e);toast('Err: '+e.message,'error')}
 }
 
-// SHARE (Web Share API → WhatsApp fallback)
-function share(){
-  if(!lastSaved)return;
-  const r=lastSaved;
-  const lines=['🏠 '+t('title'),''];
-  if(r.luce)lines.push('⚡ '+t('luce')+': '+r.luce.toFixed(2)+'€ ('+fD(r.luceDate)+')');
-  if(r.acqua)lines.push('💧 '+t('acqua')+': '+r.acqua.toFixed(2)+'€ ('+fD(r.acquaDate)+')');
-  if(r.gas)lines.push('🔥 Gas: '+r.gas.toFixed(2)+'€ ('+fD(r.gasDate)+')');
-  const total=(r.luce+r.acqua+r.gas);
-  const pp=(total/r.abitanti).toFixed(2);
-  lines.push('','💰 Total: '+total.toFixed(2)+'€','👤 '+t('cpp').split('/')[0]+': '+pp+'€');
-  const msg=lines.join('\n');
-
-  if(navigator.share){
-    navigator.share({title:t('title'),text:msg}).catch(()=>{});
-  }else{
-    window.open('https://api.whatsapp.com/send?text='+encodeURIComponent(msg),'_blank');
-  }
+// ====== SHARE ======
+function doShare(){
+  if(!lastSaved)return;const r=lastSaved;
+  const ln=['🏠 '+t('title'),''];
+  if(r.luce)ln.push('⚡ '+t('luce')+': '+r.luce.toFixed(2)+'€');
+  if(r.acqua)ln.push('💧 '+t('acqua')+': '+r.acqua.toFixed(2)+'€');
+  if(r.gas)ln.push('🔥 Gas: '+r.gas.toFixed(2)+'€');
+  const tot=r.luce+r.acqua+r.gas;ln.push('','💰 Total: '+tot.toFixed(2)+'€','👤 '+t('cpp')+': '+(tot/r.abitanti).toFixed(2)+'€');
+  const msg=ln.join('\n');
+  if(navigator.share)navigator.share({title:t('title'),text:msg}).catch(()=>{});
+  else window.open('https://api.whatsapp.com/send?text='+encodeURIComponent(msg),'_blank');
 }
+async function shareRec(id){const r=await db.records.get(id);if(r){lastSaved=r;doShare()}}
 
-// HISTORY — grouped by month
+// ====== STORICO — sorted by month desc ======
 async function rHist(){
-  const recs=await db.records.orderBy('createdAt').reverse().toArray();
+  const recs=await db.records.orderBy('month').reverse().toArray();
   const el=$('hList');
   if(!recs.length){el.innerHTML=`<div class="empty"><div class="empty-i">📋</div><p>${t('noH')}</p></div>`;return}
-
-  // Group by month (from primary date)
-  const groups={};
-  recs.forEach(r=>{
-    const d=r.luceDate||r.acquaDate||r.gasDate||r.createdAt.slice(0,10);
-    const ym=d.slice(0,7); // YYYY-MM
-    if(!groups[ym])groups[ym]=[];
-    groups[ym].push(r);
-  });
-
-  let html='';
-  const sortedKeys=Object.keys(groups).sort().reverse();
-  sortedKeys.forEach(ym=>{
-    const [y,m]=ym.split('-');
-    const mName=L[lang].mf[parseInt(m)-1]+' '+y;
-    html+=`<div class="mo-hdr">${mName}</div>`;
-    groups[ym].forEach((r,i)=>{
-      const total=(r.luce+r.acqua+r.gas).toFixed(2);
-      const zL=!r.luce,zA=!r.acqua,zG=!r.gas;
-      html+=`<div class="s-card" style="animation-delay:${i*.04}s">
-        <div class="s-row${zL?' s-zero':''}"><span class="s-ico">⚡</span><span class="s-nm">${t('luce')}</span><span class="s-val">${zL?'—':r.luce.toFixed(2)+'€'}</span>${zL?'':'<span class="s-dt">'+fDs(r.luceDate)+'</span>'}</div>
-        <div class="s-row${zA?' s-zero':''}"><span class="s-ico">💧</span><span class="s-nm">${t('acqua')}</span><span class="s-val">${zA?'—':r.acqua.toFixed(2)+'€'}</span>${zA?'':'<span class="s-dt">'+fDs(r.acquaDate)+'</span>'}</div>
-        <div class="s-row${zG?' s-zero':''}"><span class="s-ico">🔥</span><span class="s-nm">Gas</span><span class="s-val">${zG?'—':r.gas.toFixed(2)+'€'}</span>${zG?'':'<span class="s-dt">'+fDs(r.gasDate)+'</span>'}</div>
-        <div class="s-acts">
-          <button class="sa sa-ed" onclick="oEdit(${r.id})"><svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>${t('edit')}</button>
-          <button class="sa sa-del" onclick="oDel(${r.id},'${fD(r.luceDate||r.acquaDate||r.gasDate).replace(/'/g,"\\'")}')"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>${t('del')}</button>
-          <button class="sa sa-sh" onclick="shareRec(${r.id})"><svg viewBox="0 0 24 24"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>${t('share')}</button>
-        </div>
-      </div>`;
-    });
+  let html='',lastYm='';
+  recs.forEach((r,i)=>{
+    const ym=r.month;
+    if(ym!==lastYm){const[y,m]=ym.split('-');html+=`<div class="mo-hdr">${T[lang].mf[parseInt(m)-1]} ${y}</div>`;lastYm=ym}
+    const zL=!r.luce,zA=!r.acqua,zG=!r.gas;
+    const lbl=(r.luceDate||r.acquaDate||r.gasDate||'').replace(/'/g,"\\'");
+    html+=`<div class="s-card" style="animation-delay:${i*.04}s">
+      <div class="s-row${zL?' s-zero':''}"><span class="s-ico">⚡</span><span class="s-nm">${t('luce')}</span><span class="s-val">${zL?'—':r.luce.toFixed(2)+'€'}</span>${!zL&&r.luceDate?'<span class="s-dt">'+fDs(r.luceDate)+'</span>':''}</div>
+      <div class="s-row${zA?' s-zero':''}"><span class="s-ico">💧</span><span class="s-nm">${t('acqua')}</span><span class="s-val">${zA?'—':r.acqua.toFixed(2)+'€'}</span>${!zA&&r.acquaDate?'<span class="s-dt">'+fDs(r.acquaDate)+'</span>':''}</div>
+      <div class="s-row${zG?' s-zero':''}"><span class="s-ico">🔥</span><span class="s-nm">Gas</span><span class="s-val">${zG?'—':r.gas.toFixed(2)+'€'}</span>${!zG&&r.gasDate?'<span class="s-dt">'+fDs(r.gasDate)+'</span>':''}</div>
+      <div class="s-acts">
+        <button class="sa sa-ed" onclick="oEdit(${r.id})"><svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>${t('edit')}</button>
+        <button class="sa sa-del" onclick="oDel(${r.id},'${lbl}')"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>${t('del')}</button>
+        <button class="sa sa-sh" onclick="shareRec(${r.id})"><svg viewBox="0 0 24 24"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>${t('share')}</button>
+      </div></div>`;
   });
   el.innerHTML=html;
 }
 
-// Share any record
-async function shareRec(id){
-  const r=await db.records.get(id);if(!r)return;
-  lastSaved=r;share();
-}
-
-// DELETE
-let delId=null;
-function oDel(id,lbl){delId=id;$('mDelT').textContent=lbl;$('mDel').classList.add('show')}
-function cDel(){delId=null;$('mDel').classList.remove('show')}
+// ====== DELETE / EDIT ======
+let delId=null;function oDel(id,lbl){delId=id;$('mDelT').textContent=lbl;$('mDel').classList.add('show')}function cDel(){delId=null;$('mDel').classList.remove('show')}
 async function dDel(){if(delId)await db.records.delete(delId);cDel();toast(t('dOk'),'success');await rHist();await rRep()}
-
-// EDIT
 let edId=null;
-async function oEdit(id){
-  const r=await db.records.get(id);if(!r)return;edId=id;
-  $('eL').value=r.luce;$('eLD').value=r.luceDate;
-  $('eA').value=r.acqua;$('eAD').value=r.acquaDate;
-  $('eG').value=r.gas;$('eGD').value=r.gasDate;
-  $('mEdit').classList.add('show');
-}
+async function oEdit(id){const r=await db.records.get(id);if(!r)return;edId=id;$('eL').value=r.luce;$('eLD').value=r.luceDate;$('eA').value=r.acqua;$('eAD').value=r.acquaDate;$('eG').value=r.gas;$('eGD').value=r.gasDate;$('mEdit').classList.add('show')}
 function cEdit(){edId=null;$('mEdit').classList.remove('show')}
 async function dEdit(){
   if(!edId)return;
-  await db.records.update(edId,{luce:parseFloat($('eL').value)||0,luceDate:$('eLD').value,acqua:parseFloat($('eA').value)||0,acquaDate:$('eAD').value,gas:parseFloat($('eG').value)||0,gasDate:$('eGD').value});
+  // Recalculate month from dates
+  const dates=[$('eLD').value,$('eAD').value,$('eGD').value].filter(Boolean).sort();
+  const newMo=dates.length?dates[0].slice(0,7):null;
+  const upd={luce:parseFloat($('eL').value)||0,luceDate:$('eLD').value,acqua:parseFloat($('eA').value)||0,acquaDate:$('eAD').value,gas:parseFloat($('eG').value)||0,gasDate:$('eGD').value};
+  if(newMo)upd.month=newMo;
+  await db.records.update(edId,upd);
   cEdit();toast(t('eOk'),'success');await rHist();await rRep();
 }
 
-// REPORT
-let chart=null,curTab='bar';
+// ====== REPORT ======
+let chart=null,curTab='bar',moIdx=-1,allMonths=[];
 const TABS=['bar','daily','line','pie','person'];
 
-async function rRep(){
-  const recs=await db.records.orderBy('createdAt').toArray();
-  if(!recs.length){$('repE').style.display='block';$('repC').style.display='none';return}
-  $('repE').style.display='none';$('repC').style.display='block';
-
-  let sL=0,sA=0,sG=0;
-  recs.forEach(r=>{sL+=r.luce;sA+=r.acqua;sG+=r.gas});
-  const sT=sL+sA+sG,avgAb=recs.reduce((s,r)=>s+r.abitanti,0)/recs.length;
-  $('rPP').textContent=(sT/recs.length/avgAb).toFixed(2)+' €';
-  $('rAb').textContent=Math.round(avgAb)+' '+t('ab');
-  $('rL').textContent=sL.toFixed(2)+'€';
-  $('rA').textContent=sA.toFixed(2)+'€';
-  $('rG').textContent=sG.toFixed(2)+'€';
-
-  // Render tabs
-  const tabNames={bar:t('tBar'),daily:t('tDay'),line:t('tLine'),pie:t('tPie'),person:t('tPerson')};
-  $('chTabs').innerHTML=TABS.map(tb=>`<button class="ch-tab${tb===curTab?' on':''}" onclick="setTab('${tb}')">${tabNames[tb]}</button>`).join('');
-
-  drawChart(recs);
+function navMo(dir){
+  // -1 = all, 0..n = specific months
+  moIdx+=dir;
+  if(moIdx<-1)moIdx=allMonths.length-1;
+  if(moIdx>=allMonths.length)moIdx=-1;
+  rRep();
 }
 
-function setTab(tb){curTab=tb;rRep()}
+async function rRep(){
+  const all=await db.records.orderBy('month').toArray();
+  if(!all.length){$('repE').style.display='block';$('repC').style.display='none';return}
+  $('repE').style.display='none';$('repC').style.display='block';
+  allMonths=all.map(r=>r.month);
 
-function drawChart(recs){
-  if(chart)chart.destroy();
-  const labels=recs.map(r=>fDs(r.luceDate||r.acquaDate||r.gasDate));
-  const dL=recs.map(r=>r.luce),dA=recs.map(r=>r.acqua),dG=recs.map(r=>r.gas);
-  const dT=recs.map(r=>r.luce+r.acqua+r.gas);
-  const canvas=$('chCanvas');
+  // Filter for summary
+  const recs=moIdx===-1?all:[all.find(r=>r.month===allMonths[moIdx])].filter(Boolean);
+  const moLbl=moIdx===-1?t('all'):fMo(allMonths[moIdx]);
+  $('moLabel').textContent=moLbl;
+
+  let sL=0,sA=0,sG=0;recs.forEach(r=>{sL+=r.luce;sA+=r.acqua;sG+=r.gas});
+  const sT=sL+sA+sG,avgAb=recs.reduce((s,r)=>s+r.abitanti,0)/recs.length||4;
+  const nMo=recs.length||1;
+  $('rSumLbl').textContent=t('cpp')+' ('+Math.round(avgAb)+' '+t('ab')+')';
+  $('rPP').textContent=(sT/nMo/avgAb).toFixed(2)+' €/'+t('ab').toLowerCase().slice(0,2);
+  $('rL').textContent=sL.toFixed(2)+'€';$('rA').textContent=sA.toFixed(2)+'€';$('rG').textContent=sG.toFixed(2)+'€';
+
+  // Tabs
+  const tn={bar:t('tBar'),daily:t('tDay'),line:t('tLine'),pie:t('tPie'),person:t('tPerson')};
+  $('chTabs').innerHTML=TABS.map(tb=>`<button class="ch-tab${tb===curTab?' on':''}" onclick="curTab='${tb}';rRep()">${tn[tb]}</button>`).join('');
+
+  drawCh(all);
+}
+
+function drawCh(recs){
+  if(chart){chart.destroy();chart=null}
+  const cv=$('chCanvas');
+  const labels=recs.map(r=>fMoS(r.month));
+  const dL=recs.map(r=>r.luce),dA=recs.map(r=>r.acqua),dG=recs.map(r=>r.gas),dT=recs.map(r=>r.luce+r.acqua+r.gas);
+  const dlOpt={display:ctx=>ctx.dataset.data[ctx.dataIndex]>0,color:'#333',font:{size:9,weight:'bold'},anchor:'end',align:'top',formatter:v=>v.toFixed(0)+'€'};
 
   if(curTab==='bar'){
     $('chTit').textContent=t('tBar');
-    chart=new Chart(canvas,{type:'bar',data:{labels,datasets:[
-      {label:t('luce'),data:dL,backgroundColor:'#f59e0b',borderRadius:5},
-      {label:t('acqua'),data:dA,backgroundColor:'#06b6d4',borderRadius:5},
-      {label:'Gas',data:dG,backgroundColor:'#f43f5e',borderRadius:5}
-    ]},options:cOpt()});
-  }
-  else if(curTab==='daily'){
+    chart=new Chart(cv,{type:'bar',data:{labels,datasets:[
+      {label:t('luce'),data:dL,backgroundColor:'#f59e0b',borderRadius:4},
+      {label:t('acqua'),data:dA,backgroundColor:'#06b6d4',borderRadius:4},
+      {label:'Gas',data:dG,backgroundColor:'#f43f5e',borderRadius:4}
+    ]},options:bOpt(dlOpt)});
+  }else if(curTab==='daily'){
     $('chTit').textContent=t('tDay');
     const dyL=[],dyA=[],dyG=[],dyT=[],lb=[];
-    for(let i=0;i<recs.length;i++){
-      if(i===0)continue;
+    for(let i=1;i<recs.length;i++){
       const dl=dBt(recs[i-1].luceDate,recs[i].luceDate)||30;
       const da=dBt(recs[i-1].acquaDate,recs[i].acquaDate)||30;
       const dg=dBt(recs[i-1].gasDate,recs[i].gasDate)||30;
-      const vl=+(recs[i].luce/dl).toFixed(2),va=+(recs[i].acqua/da).toFixed(2),vg=+(recs[i].gas/dg).toFixed(2);
-      dyL.push(vl);dyA.push(va);dyG.push(vg);dyT.push(+(vl+va+vg).toFixed(2));
-      lb.push(labels[i]);
+      const vl=recs[i].luce?+(recs[i].luce/dl).toFixed(2):0;
+      const va=recs[i].acqua?+(recs[i].acqua/da).toFixed(2):0;
+      const vg=recs[i].gas?+(recs[i].gas/dg).toFixed(2):0;
+      dyL.push(vl);dyA.push(va);dyG.push(vg);dyT.push(+(vl+va+vg).toFixed(2));lb.push(labels[i]);
     }
-    chart=new Chart(canvas,{type:'bar',data:{labels:lb,datasets:[
-      {label:t('luce'),data:dyL,backgroundColor:'rgba(245,158,11,.7)',borderRadius:5},
-      {label:t('acqua'),data:dyA,backgroundColor:'rgba(6,182,212,.7)',borderRadius:5},
-      {label:'Gas',data:dyG,backgroundColor:'rgba(244,63,94,.7)',borderRadius:5},
-      {label:'Total',data:dyT,type:'line',borderColor:'#6366f1',borderWidth:2,pointRadius:4,pointBackgroundColor:'#6366f1',fill:false,tension:.3}
-    ]},options:cOpt()});
-  }
-  else if(curTab==='line'){
+    const dlDay={...dlOpt,formatter:v=>v>0?v.toFixed(2)+'€':''};
+    chart=new Chart(cv,{type:'bar',data:{labels:lb,datasets:[
+      {label:t('luce'),data:dyL,backgroundColor:'rgba(245,158,11,.7)',borderRadius:4},
+      {label:t('acqua'),data:dyA,backgroundColor:'rgba(6,182,212,.7)',borderRadius:4},
+      {label:'Gas',data:dyG,backgroundColor:'rgba(244,63,94,.7)',borderRadius:4},
+      {label:'Total',data:dyT,type:'line',borderColor:'#6366f1',borderWidth:2,pointRadius:4,pointBackgroundColor:'#6366f1',fill:false,tension:.3,datalabels:{color:'#6366f1',anchor:'end',align:'top',formatter:v=>v.toFixed(2)+'€'}}
+    ]},options:bOpt(dlDay)});
+  }else if(curTab==='line'){
     $('chTit').textContent=t('tLine');
-    chart=new Chart(canvas,{type:'line',data:{labels,datasets:[
-      {label:'Total',data:dT,borderColor:'#6366f1',backgroundColor:'rgba(99,102,241,.1)',fill:true,tension:.35,pointRadius:4,borderWidth:2.5},
-      {label:t('luce'),data:dL,borderColor:'#f59e0b',borderWidth:1.5,pointRadius:3,tension:.3,fill:false},
-      {label:t('acqua'),data:dA,borderColor:'#06b6d4',borderWidth:1.5,pointRadius:3,tension:.3,fill:false},
-      {label:'Gas',data:dG,borderColor:'#f43f5e',borderWidth:1.5,pointRadius:3,tension:.3,fill:false}
-    ]},options:cOpt()});
-  }
-  else if(curTab==='pie'){
+    const dlLine={display:ctx=>ctx.dataset.data[ctx.dataIndex]>0,font:{size:9,weight:'bold'},anchor:'end',align:'top',formatter:v=>v.toFixed(0)+'€'};
+    chart=new Chart(cv,{type:'line',data:{labels,datasets:[
+      {label:'Total',data:dT,borderColor:'#6366f1',backgroundColor:'rgba(99,102,241,.1)',fill:true,tension:.3,pointRadius:4,borderWidth:2.5,datalabels:{color:'#6366f1',...dlLine}},
+      {label:t('luce'),data:dL,borderColor:'#f59e0b',borderWidth:1.5,pointRadius:3,tension:.3,fill:false,datalabels:{color:'#f59e0b',...dlLine}},
+      {label:t('acqua'),data:dA,borderColor:'#06b6d4',borderWidth:1.5,pointRadius:3,tension:.3,fill:false,datalabels:{color:'#06b6d4',...dlLine}},
+      {label:'Gas',data:dG,borderColor:'#f43f5e',borderWidth:1.5,pointRadius:3,tension:.3,fill:false,datalabels:{color:'#f43f5e',...dlLine}}
+    ]},options:bOpt({display:false})});
+  }else if(curTab==='pie'){
     $('chTit').textContent=t('tPie');
     let sL=0,sA=0,sG=0;recs.forEach(r=>{sL+=r.luce;sA+=r.acqua;sG+=r.gas});
-    chart=new Chart(canvas,{type:'doughnut',data:{labels:[t('luce'),t('acqua'),'Gas'],datasets:[{data:[sL,sA,sG],backgroundColor:['#f59e0b','#06b6d4','#f43f5e'],borderWidth:0,spacing:2}]},options:{responsive:true,maintainAspectRatio:true,cutout:'65%',plugins:{legend:{position:'bottom',labels:{boxWidth:10,font:{size:11}}}}}});
-  }
-  else if(curTab==='person'){
+    chart=new Chart(cv,{type:'doughnut',data:{labels:[t('luce'),t('acqua'),'Gas'],datasets:[{data:[sL,sA,sG],backgroundColor:['#f59e0b','#06b6d4','#f43f5e'],borderWidth:0,spacing:2}]},options:{responsive:true,maintainAspectRatio:true,cutout:'60%',plugins:{legend:{position:'bottom',labels:{boxWidth:10,font:{size:11}}},datalabels:{color:'#fff',font:{size:12,weight:'bold'},formatter:(v,ctx)=>{const sum=ctx.dataset.data.reduce((a,b)=>a+b,0);return sum?Math.round(v/sum*100)+'%':''}}}},plugins:[ChartDataLabels]});return;
+  }else if(curTab==='person'){
     $('chTit').textContent=t('tPerson');
     const pp=recs.map(r=>+((r.luce+r.acqua+r.gas)/r.abitanti).toFixed(2));
-    chart=new Chart(canvas,{type:'bar',data:{labels,datasets:[
-      {label:t('tPerson'),data:pp,backgroundColor:'rgba(99,102,241,.7)',borderRadius:5}
-    ]},options:cOpt()});
+    const dlP={...dlOpt,formatter:v=>v.toFixed(2)+'€'};
+    chart=new Chart(cv,{type:'bar',data:{labels,datasets:[{label:t('tPerson'),data:pp,backgroundColor:'rgba(99,102,241,.7)',borderRadius:4}]},options:bOpt(dlP)});
   }
 }
-function cOpt(){return{responsive:true,maintainAspectRatio:true,plugins:{legend:{position:'bottom',labels:{boxWidth:10,font:{size:10}}}},scales:{y:{beginAtZero:true,grid:{color:'#f1f5f9'},ticks:{font:{size:9}}},x:{grid:{display:false},ticks:{font:{size:9}}}}}}
 
-// EXPORT
+function bOpt(dl){return{responsive:true,maintainAspectRatio:true,plugins:{legend:{position:'bottom',labels:{boxWidth:10,font:{size:10}}},datalabels:dl},scales:{y:{beginAtZero:true,grid:{color:'#f1f5f9'},ticks:{font:{size:9}}},x:{grid:{display:false},ticks:{font:{size:9}}}}}}
+
+// ====== EXPORT ======
 function expPDF(){html2pdf().set({margin:6,filename:'bollette.pdf',image:{type:'jpeg',quality:.95},html2canvas:{scale:2},jsPDF:{unit:'mm',format:'a4',orientation:'portrait'}}).from($('repC')).save()}
-async function expBk(){
-  const r=await db.records.toArray();
-  const b=new Blob([JSON.stringify({v:3,lang,records:r,at:new Date().toISOString()},null,2)],{type:'application/json'});
-  const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='bollette-backup-'+new Date().toISOString().slice(0,10)+'.json';a.click();URL.revokeObjectURL(a.href);toast(t('bOk'),'success');
-}
-async function impBk(e){
-  const f=e.target.files[0];if(!f)return;
-  try{const d=JSON.parse(await f.text());if(!d.records)throw 0;await db.records.clear();
-    for(const r of d.records)await db.records.add({luce:r.luce||0,luceDate:r.luceDate||'',acqua:r.acqua||0,acquaDate:r.acquaDate||'',gas:r.gas||0,gasDate:r.gasDate||'',abitanti:r.abitanti||4,createdAt:r.createdAt||new Date().toISOString()});
-    toast(t('iOk'),'success');rHist();rRep();
-  }catch(err){toast(t('iFail'),'error')}e.target.value='';
-}
+async function expBk(){const r=await db.records.toArray();const b=new Blob([JSON.stringify({v:4,lang,records:r,at:new Date().toISOString()},null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='bollette-'+new Date().toISOString().slice(0,10)+'.json';a.click();URL.revokeObjectURL(a.href);toast(t('bOk'),'success')}
+async function impBk(e){const f=e.target.files[0];if(!f)return;try{const d=JSON.parse(await f.text());if(!d.records)throw 0;await db.records.clear();for(const r of d.records){const mo=r.month||r.luceDate?.slice(0,7)||r.acquaDate?.slice(0,7)||r.gasDate?.slice(0,7)||r.createdAt?.slice(0,7)||'2026-01';await db.records.put({month:mo,luce:r.luce||0,luceDate:r.luceDate||'',acqua:r.acqua||0,acquaDate:r.acquaDate||'',gas:r.gas||0,gasDate:r.gasDate||'',abitanti:r.abitanti||r.moradores||4,createdAt:r.createdAt||new Date().toISOString()})}toast(t('iOk'),'success');rHist();rRep()}catch(err){toast(t('iFail'),'error')}e.target.value=''}
 
-// UTILS
-function fD(d){if(!d)return'--';const p=d.split('-');return parseInt(p[2])+' '+L[lang].mn[parseInt(p[1])-1]+' '+p[0]}
-function fDs(d){if(!d)return'--';const p=d.split('-');return parseInt(p[2])+' '+L[lang].mn[parseInt(p[1])-1]}
+// ====== UTILS ======
+function fDs(d){if(!d)return'';const p=d.split('-');return parseInt(p[2])+' '+T[lang].mn[parseInt(p[1])-1]}
+function fMo(ym){const[y,m]=ym.split('-');return T[lang].mf[parseInt(m)-1]+' '+y}
+function fMoS(ym){const[y,m]=ym.split('-');return T[lang].mn[parseInt(m)-1]+' '+y.slice(2)}
 function dBt(a,b){if(!a||!b)return 0;return Math.round(Math.abs(new Date(b)-new Date(a))/864e5)}
 function toast(m,tp){const e=$('toast');e.textContent=m;e.className='toast'+(tp?' '+tp:'');e.classList.add('show');setTimeout(()=>e.classList.remove('show'),2200)}
 
-// INIT
-apL();
-const td=new Date().toISOString().slice(0,10);
-$('iLD').value=td;$('iAD').value=td;$('iGD').value=td;
-
-// Migrate data from old DBs
-(async function migrate(){
-  const oldNames=['ContasCasaDB','BolletteCasaDB','BolletteCasaV2'];
+// ====== MIGRATE OLD DBS ======
+(async function(){
+  const oldNames=['ContasCasaDB','BolletteCasaDB','BolletteCasaV2','BolletteCasaV3'];
   for(const name of oldNames){
     try{
-      const old=new Dexie(name);
-      const exists=await Dexie.exists(name);
-      if(!exists)continue;
-      old.version(1).stores({records:'++id'});
-      await old.open();
+      if(!await Dexie.exists(name))continue;
+      const old=new Dexie(name);old.version(1).stores({records:'++id'});await old.open();
       const recs=await old.records.toArray();
-      if(recs.length){
-        for(const r of recs){
-          // Check if already migrated (by createdAt)
-          const dup=await db.records.where('createdAt').equals(r.createdAt||'').first();
-          if(!dup){
-            await db.records.add({
-              luce:r.luce||0,luceDate:r.luceDate||r.month||'',
-              acqua:r.acqua||0,acquaDate:r.acquaDate||r.month||'',
-              gas:r.gas||0,gasDate:r.gasDate||r.month||'',
-              abitanti:r.abitanti||r.moradores||4,
-              createdAt:r.createdAt||new Date().toISOString()
-            });
-          }
+      for(const r of recs){
+        const mo=r.month||r.luceDate?.slice(0,7)||r.acquaDate?.slice(0,7)||r.gasDate?.slice(0,7)||r.createdAt?.slice(0,7)||'2026-01';
+        const ex=await db.records.where('month').equals(mo).first();
+        if(ex){
+          const upd={};
+          if(r.luce&&!ex.luce){upd.luce=r.luce;upd.luceDate=r.luceDate}
+          if(r.acqua&&!ex.acqua){upd.acqua=r.acqua;upd.acquaDate=r.acquaDate}
+          if(r.gas&&!ex.gas){upd.gas=r.gas;upd.gasDate=r.gasDate}
+          if(Object.keys(upd).length)await db.records.update(ex.id,upd);
+        }else{
+          await db.records.add({month:mo,luce:r.luce||0,luceDate:r.luceDate||'',acqua:r.acqua||0,acquaDate:r.acquaDate||'',gas:r.gas||0,gasDate:r.gasDate||'',abitanti:r.abitanti||r.moradores||4,createdAt:r.createdAt||new Date().toISOString()});
         }
-        console.log('Migrated '+recs.length+' from '+name);
       }
-      old.close();
-      await Dexie.delete(name);
-    }catch(e){console.log('Skip '+name,e)}
+      old.close();await Dexie.delete(name);console.log('Migrated '+name);
+    }catch(e){console.log('Skip '+name)}
   }
-  // Refresh after migration
   rHist();rRep();
-})()
+})();
+
+// ====== INIT ======
+apL();
+const td=new Date().toISOString().slice(0,10);$('iLD').value=td;$('iAD').value=td;$('iGD').value=td;
+Chart.register(ChartDataLabels);
 </script>
 </body>
 </html>
