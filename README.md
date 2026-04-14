@@ -62,6 +62,11 @@ Quando salvi una bolletta per un mese che esiste gia, i valori nuovi si **fondon
 
 ## Changelog
 
+### v9 (2026-04-14)
+- **Blocco duplicati**: se una bolletta esiste gia per quel mese, mostra errore e non salva
+- Messaggio: "Luce — Aprile 2026 gia registrata! Modifica dallo Storico."
+- Per cambiare un valore esistente, usare Modifica dallo Storico
+
 ### v8 (2026-04-14)
 - **1 record per mese**: salvataggi multipli per lo stesso mese si fondono
 - **Prezzi sui grafici**: tutte le barre e linee mostrano il valore in €
