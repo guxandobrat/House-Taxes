@@ -59,8 +59,8 @@
 .au{font-size:11px;color:#b45309;background:var(--luce-bg);padding:8px 12px;border-radius:var(--rs);text-align:center;margin-bottom:10px;display:none}
 .trsc{background:var(--luce-bg);border:1px solid #fde68a;border-radius:var(--rs);padding:10px;margin-bottom:10px;font-size:12px;color:#92400e;display:none}.trsc.show{display:block}.trsc b{font-size:10px;display:block;margin-bottom:3px;text-transform:uppercase;letter-spacing:.4px}
 /* SAVE */
-.sf{position:absolute;bottom:calc(var(--navh)+10px);left:16px;right:16px;opacity:0;pointer-events:none;z-index:110;transition:all .35s cubic-bezier(.4,0,.2,1);display:flex;gap:8px}
-.sf.pop{opacity:1;pointer-events:auto}
+.sf{display:none;gap:8px;margin-top:10px;margin-bottom:10px}
+.sf.pop{display:flex}
 .sv-btn{flex:1;padding:14px;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;background:linear-gradient(135deg,var(--ok),#059669);color:#fff;box-shadow:0 6px 24px rgba(16,185,129,.35);transition:all .2s}.sv-btn:active{transform:scale(.97)}.sv-btn svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2.5}
 .sh-btn{padding:14px 16px;border:none;border-radius:12px;background:#25D366;color:#fff;font-size:15px;font-weight:700;cursor:pointer;display:none;align-items:center;justify-content:center;gap:6px;box-shadow:0 4px 20px rgba(37,211,102,.3)}.sh-btn:active{transform:scale(.97)}.sf.shared .sh-btn{display:flex}.sf.shared .sv-btn{display:none}
 /* STORICO */
@@ -118,6 +118,7 @@
     <div class="trsc" id="trsc"><b data-i18n="und">Capito:</b><div id="trT"></div></div>
     <div class="mic-s" id="micS"><button class="mic-b" id="micB" onclick="togR()"><svg viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg></button><div class="mic-l" id="micL" data-i18n="tap">Tocca per registrare</div><div class="mic-h" data-i18n="hint">"Luce 85, acqua 42, gas 63"</div></div>
     <div class="au" id="au" data-i18n="noMic">Microfono non disponibile.</div>
+    <div class="sf" id="sf"><button class="sv-btn" onclick="save()"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg><span data-i18n="save">Salva</span></button><button class="sh-btn" id="shBtn" onclick="doShare()">📤 WhatsApp</button></div>
   </div>
   <!-- STORICO -->
   <div class="scr" id="s-sto"><div id="hList"></div></div>
@@ -141,7 +142,6 @@
     <button class="nb" data-s="sto"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg><span data-i18n="nSto">Storico</span></button>
     <button class="nb" data-s="rep"><svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg><span data-i18n="nRep">Report</span></button>
   </nav>
-  <div class="sf" id="sf"><button class="sv-btn" onclick="save()"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg><span data-i18n="save">Salva</span></button><button class="sh-btn" id="shBtn" onclick="doShare()">📤 WhatsApp</button></div>
 </div>
 <script>
 const $=id=>document.getElementById(id);
@@ -171,7 +171,7 @@ function setL(l){lang=l;localStorage.setItem('bl',l);apL();rHist();rRep();togSet
 let sO=false;function togSet(){sO=!sO;$('sp').classList.toggle('open',sO);$('caw').classList.toggle('show',sO)}
 
 // ====== NAV ======
-function go(s){document.querySelectorAll('.scr').forEach(x=>x.classList.remove('on'));$('s-'+s).classList.add('on');document.querySelectorAll('.nb').forEach(b=>b.classList.remove('on'));document.querySelector(`.nb[data-s="${s}"]`).classList.add('on');if(s==='sto')rHist();if(s==='rep')rRep();if(s!=='reg')$('sf').classList.remove('pop','shared');else chk()}
+function go(s){document.querySelectorAll('.scr').forEach(x=>x.classList.remove('on'));$('s-'+s).classList.add('on');document.querySelectorAll('.nb').forEach(b=>b.classList.remove('on'));document.querySelector(`.nb[data-s="${s}"]`).classList.add('on');if(s==='sto')rHist();if(s==='rep')rRep()}
 document.querySelectorAll('.nb').forEach(b=>b.addEventListener('click',()=>go(b.dataset.s)));
 
 let ab=parseInt(localStorage.getItem('bab'))||4;$('abV').textContent=ab;
