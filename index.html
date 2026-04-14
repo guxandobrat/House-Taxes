@@ -15,7 +15,6 @@
 <script src="https://cdn.jsdelivr.net/npm/dexie@3/dist/dexie.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
-<script src="https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js"></script>
 <style>
 :root{--pri:#6366f1;--pri-l:#a5b4fc;--pri-d:#4f46e5;--pri-g:rgba(99,102,241,.25);--luce:#f59e0b;--luce-bg:#fffbeb;--acqua:#06b6d4;--acqua-bg:#ecfeff;--gas:#f43f5e;--gas-bg:#fff1f2;--bg:#f1f5f9;--card:#fff;--tx:#1e293b;--tx2:#64748b;--tx3:#94a3b8;--brd:#e2e8f0;--ok:#10b981;--err:#ef4444;--r:16px;--rs:10px;--sh:0 1px 3px rgba(0,0,0,.06);--navh:68px;--hh:56px}
 *{margin:0;padding:0;box-sizing:border-box}body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--tx);min-height:100dvh;overflow:hidden}input,select,button{font-family:inherit}
@@ -131,7 +130,6 @@
       <div class="r-row"><div class="r-st luce"><div class="lb" data-i18n="luce">Luce</div><div class="vl" id="rL">--</div></div><div class="r-st acqua"><div class="lb" data-i18n="acqua">Acqua</div><div class="vl" id="rA">--</div></div><div class="r-st gas"><div class="lb">Gas</div><div class="vl" id="rG">--</div></div></div>
       <div class="ch-tabs" id="chTabs"></div>
       <div class="ch-card"><div class="ch-tit" id="chTit"></div><canvas id="chCanvas"></canvas></div>
-      <button class="rb rb-pdf" onclick="expPDF()"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span data-i18n="xpdf">Esporta PDF</span></button>
     </div>
   </div>
   <div class="toast" id="toast"></div>
@@ -371,17 +369,6 @@ function drawCh(recs){
 function bOpt(dl){return{responsive:true,maintainAspectRatio:true,plugins:{legend:{position:'bottom',labels:{boxWidth:10,font:{size:10}}},datalabels:dl},scales:{y:{beginAtZero:true,grid:{color:'#f1f5f9'},ticks:{font:{size:9}}},x:{grid:{display:false},ticks:{font:{size:9}}}}}}
 
 // ====== EXPORT ======
-function expPDF(){
-  const el=$('repC');
-  html2pdf().set({
-    margin:[10,8,10,8],
-    filename:'bollette-di-casa.pdf',
-    image:{type:'png',quality:1},
-    html2canvas:{scale:3,useCORS:true,logging:false,backgroundColor:'#f1f5f9'},
-    jsPDF:{unit:'mm',format:'a4',orientation:'portrait'},
-    pagebreak:{mode:['avoid-all','css','legacy']}
-  }).from(el).save();
-}
 
 // ====== UTILS ======
 function fDs(d){if(!d)return'';const p=d.split('-');return parseInt(p[2])+' '+T[lang].mn[parseInt(p[1])-1]}
