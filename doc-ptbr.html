@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Como Construi o Bollette di Casa - Guia para Estudantes de Programacao</title>
+<style>
+  /* ===== RESET & BASE ===== */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  @page {
+    size: A4;
+    margin: 20mm 18mm 25mm 18mm;
+  }
+
+  body {
+    font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+    font-size: 11pt;
+    line-height: 1.65;
+    color: #1a1a1a;
+    background: #fff;
+    max-width: 210mm;
+    margin: 0 auto;
+    padding: 15mm 12mm;
+  }
+
+  /* ===== PRINT ===== */
+  @media print {
+    body { padding: 0; max-width: none; font-size: 10.5pt; }
+    .page-break { page-break-before: always; }
+    .no-break { page-break-inside: avoid; }
+    h2 { page-break-after: avoid; }
+    pre, .diagram-box { page-break-inside: avoid; }
+    a { color: #1a1a1a !important; text-decoration: none !important; }
+    a.print-url::after { content: " (" attr(href) ")"; font-size: 9pt; color: #555; }
+  }
+
+  /* ===== TYPOGRAPHY ===== */
+  h1 {
+    font-size: 22pt;
+    font-weight: 700;
+    color: #0d47a1;
+    margin-bottom: 4mm;
+    padding-bottom: 3mm;
+    border-bottom: 3px solid #0d47a1;
+    line-height: 1.2;
+  }
+
+  .subtitle {
+    font-size: 12pt;
+    color: #555;
+    margin-bottom: 8mm;
+    font-style: italic;
+  }
+
+  h2 {
+    font-size: 16pt;
+    font-weight: 700;
+    color: #1565c0;
+    margin-top: 10mm;
+    margin-bottom: 5mm;
+    padding-bottom: 2mm;
+    border-bottom: 2px solid #e3f2fd;
+  }
+
+  h3 {
+    font-size: 13pt;
+    font-weight: 600;
+    color: #1976d2;
+    margin-top: 6mm;
+    margin-bottom: 3mm;
+  }
+
+  p { margin-bottom: 3mm; text-align: justify; }
+
+  /* ===== CALLOUT BOXES ===== */
+  .tip-box {
+    background: #e8f5e9;
+    border-left: 4px solid #4caf50;
+    padding: 3mm 4mm;
+    margin: 4mm 0;
+    border-radius: 0 4px 4px 0;
+    font-size: 10pt;
+  }
+  .tip-box strong { color: #2e7d32; }
+
+  .why-box {
+    background: #fff3e0;
+    border-left: 4px solid #ff9800;
+    padding: 3mm 4mm;
+    margin: 4mm 0;
+    border-radius: 0 4px 4px 0;
+    font-size: 10pt;
+  }
+  .why-box strong { color: #e65100; }
+
+  .warn-box {
+    background: #fce4ec;
+    border-left: 4px solid #e91e63;
+    padding: 3mm 4mm;
+    margin: 4mm 0;
+    border-radius: 0 4px 4px 0;
+    font-size: 10pt;
+  }
+  .warn-box strong { color: #c62828; }
+
+  /* ===== CODE ===== */
+  code {
+    font-family: 'Consolas', 'Fira Code', 'Courier New', monospace;
+    background: #f5f5f5;
+    padding: 1px 4px;
+    border-radius: 3px;
+    font-size: 9.5pt;
+    color: #c62828;
+  }
+
+  pre {
+    background: #263238;
+    color: #eeffff;
+    padding: 4mm;
+    border-radius: 6px;
+    overflow-x: auto;
+    font-family: 'Consolas', 'Fira Code', 'Courier New', monospace;
+    font-size: 9pt;
+    line-height: 1.5;
+    margin: 3mm 0 5mm 0;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+  }
+  pre code { background: none; color: inherit; padding: 0; font-size: inherit; }
+
+  /* Syntax colors inside pre */
+  .kw { color: #c792ea; }      /* keywords */
+  .str { color: #c3e88d; }     /* strings */
+  .fn { color: #82aaff; }      /* functions */
+  .cm { color: #546e7a; }      /* comments */
+  .num { color: #f78c6c; }     /* numbers */
+  .prop { color: #ffcb6b; }    /* properties */
+  .tag { color: #f07178; }     /* HTML tags */
+  .attr { color: #ffcb6b; }    /* HTML attributes */
+
+  /* ===== DIAGRAMS ===== */
+  .diagram-box {
+    background: #fafafa;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 5mm;
+    margin: 4mm 0;
+    font-family: 'Consolas', monospace;
+    font-size: 9pt;
+    line-height: 1.6;
+    text-align: center;
+    overflow-x: auto;
+    white-space: pre;
+  }
+  .diagram-box .label {
+    font-family: 'Segoe UI', sans-serif;
+    font-size: 9pt;
+    color: #666;
+    display: block;
+    text-align: center;
+    margin-top: 2mm;
+    font-style: italic;
+  }
+
+  /* ===== FLOW NODES ===== */
+  .flow-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 3mm;
+    margin: 4mm 0;
+  }
+  .flow-node {
+    background: #e3f2fd;
+    border: 2px solid #1565c0;
+    border-radius: 8px;
+    padding: 2mm 4mm;
+    font-size: 9pt;
+    font-weight: 600;
+    color: #0d47a1;
+    text-align: center;
+    min-width: 25mm;
+  }
+  .flow-arrow {
+    font-size: 14pt;
+    color: #1565c0;
+    font-weight: bold;
+  }
+
+  /* ===== TABLES ===== */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 3mm 0 5mm 0;
+    font-size: 10pt;
+  }
+  th {
+    background: #1565c0;
+    color: #fff;
+    padding: 2mm 3mm;
+    text-align: left;
+    font-weight: 600;
+  }
+  td {
+    padding: 2mm 3mm;
+    border-bottom: 1px solid #e0e0e0;
+  }
+  tr:nth-child(even) { background: #f5f5f5; }
+
+  /* ===== LISTS ===== */
+  ul, ol { margin: 2mm 0 4mm 8mm; }
+  li { margin-bottom: 1.5mm; }
+
+  /* ===== VERSION TIMELINE ===== */
+  .timeline { position: relative; padding-left: 8mm; margin: 4mm 0; }
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 3mm;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: #1565c0;
+  }
+  .timeline-item {
+    position: relative;
+    margin-bottom: 4mm;
+    padding-left: 6mm;
+  }
+  .timeline-item::before {
+    content: '';
+    position: absolute;
+    left: -6.5mm;
+    top: 2mm;
+    width: 8px;
+    height: 8px;
+    background: #1565c0;
+    border-radius: 50%;
+    border: 2px solid #fff;
+    box-shadow: 0 0 0 2px #1565c0;
+  }
+  .timeline-version {
+    font-weight: 700;
+    color: #1565c0;
+    font-size: 10.5pt;
+  }
+  .timeline-desc { font-size: 10pt; color: #333; }
+
+  /* ===== FOOTER ===== */
+  .doc-footer {
+    margin-top: 10mm;
+    padding-top: 4mm;
+    border-top: 1px solid #ccc;
+    font-size: 9pt;
+    color: #888;
+    text-align: center;
+  }
+
+  /* ===== TOC ===== */
+  .toc {
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    padding: 5mm;
+    margin: 5mm 0 8mm 0;
+  }
+  .toc-title {
+    font-weight: 700;
+    font-size: 12pt;
+    color: #1565c0;
+    margin-bottom: 3mm;
+  }
+  .toc ol { margin-left: 5mm; }
+  .toc li { margin-bottom: 1.5mm; font-size: 10.5pt; }
+  .toc a { color: #1565c0; text-decoration: none; }
+  .toc a:hover { text-decoration: underline; }
+
+  /* ===== TECH CARDS ===== */
+  .tech-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 3mm;
+    margin: 4mm 0;
+  }
+  .tech-card {
+    background: #f5f5f5;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    padding: 3mm;
+  }
+  .tech-card h4 {
+    font-size: 10.5pt;
+    color: #1565c0;
+    margin-bottom: 1mm;
+  }
+  .tech-card p { font-size: 9.5pt; margin-bottom: 0; text-align: left; }
+</style>
+</head>
+<body>
+
+<!-- ===== COVER ===== -->
+<h1>Bollette di Casa: Como Construi um App Web do Zero</h1>
+<p class="subtitle">Um guia pratico para estudantes de programacao &mdash; da ideia ao deploy, sem gastar nenhum centavo</p>
+
+<div class="toc">
+  <div class="toc-title">Sumario</div>
+  <ol>
+    <li><a href="#intro">Introducao: O Problema Real</a></li>
+    <li><a href="#arch">Arquitetura: Um Unico Arquivo HTML</a></li>
+    <li><a href="#data">Como os Dados Sao Armazenados</a></li>
+    <li><a href="#features">Funcionalidades Principais</a></li>
+    <li><a href="#evolution">Processo de Desenvolvimento (12+ Iteracoes)</a></li>
+    <li><a href="#tech">Tecnologias Utilizadas</a></li>
+    <li><a href="#ghpages">Como o GitHub Pages Funciona</a></li>
+    <li><a href="#lessons">Licoes Aprendidas</a></li>
+  </ol>
+</div>
+
+<!-- ===== 1. INTRO ===== -->
+<h2 id="intro">1. Introducao: O Problema Real</h2>
+
+<p>Todo projeto bom comeca com um <strong>problema real</strong>. Neste caso: em uma casa compartilhada na Italia, precisavamos controlar as contas de luz (<em>luce</em>), agua (<em>acqua</em>) e gas. Quem pagou o que? Quanto custou cada mes? Qual a tendencia dos gastos?</p>
+
+<p>A solucao: criar um app web chamado <strong>Bollette di Casa</strong> ("Contas da Casa" em italiano) que qualquer morador pudesse acessar pelo celular, registrar valores por voz, ver graficos e compartilhar relatorios pelo WhatsApp.</p>
+
+<div class="why-box">
+  <strong>Por que isso importa para voce?</strong> Aprender programacao com um projeto real e muito mais eficaz do que tutoriais abstratos. Voce enfrenta problemas verdadeiros (dados duplicados, compatibilidade de navegador, experiencia do usuario) e aprende a resolve-los.
+</div>
+
+<p>O app esta no ar em: <a href="https://guxandobrat.github.io/House-Taxes/" class="print-url">https://guxandobrat.github.io/House-Taxes/</a></p>
+<p>Codigo-fonte: <a href="https://github.com/guxandobrat/House-Taxes" class="print-url">https://github.com/guxandobrat/House-Taxes</a></p>
+
+<!-- ===== 2. ARCHITECTURE ===== -->
+<h2 id="arch">2. Arquitetura: Um Unico Arquivo HTML</h2>
+
+<h3>A Decisao Mais Importante</h3>
+<p>Optamos por colocar <strong>tudo em um unico arquivo</strong> <code>index.html</code>: HTML, CSS (dentro de <code>&lt;style&gt;</code>) e JavaScript (dentro de <code>&lt;script&gt;</code>). Sem React. Sem Vue. Sem framework. Sem servidor backend.</p>
+
+<div class="why-box">
+  <strong>Por que um unico arquivo?</strong> Simplicidade. Um arquivo HTML pode ser hospedado gratuitamente no GitHub Pages. Sem build step. Sem configuracao de servidor. Sem custos. Basta fazer push e o app esta no ar.
+</div>
+
+<div class="diagram-box">
++------------------------------------------------------+
+|                    index.html                         |
+|                                                       |
+|  +-------------+  +---------------+  +-----------+   |
+|  |  &lt;style&gt;    |  |  HTML/Forms   |  | &lt;script&gt;  |   |
+|  |  CSS visual |  |  Estrutura    |  | Logica JS |   |
+|  |  Responsivo |  |  da pagina    |  | IndexedDB |   |
+|  |  Print CSS  |  |  + Graficos   |  | Charts    |   |
+|  +-------------+  +---------------+  +-----------+   |
+|                                                       |
+|  Bibliotecas externas (CDN):                          |
+|  - Dexie.js (IndexedDB)                              |
+|  - Chart.js + plugin-datalabels                       |
++------------------------------------------------------+
+<span class="label">Figura 1: Estrutura do arquivo unico</span>
+</div>
+
+<h3>O Fluxo de Dados</h3>
+<p>Sem servidor, os dados vivem <strong>inteiramente no navegador do usuario</strong>, usando o IndexedDB:</p>
+
+<div class="flow-container">
+  <div class="flow-node">Usuario<br>preenche form<br>(ou fala)</div>
+  <div class="flow-arrow">&rarr;</div>
+  <div class="flow-node">JavaScript<br>valida e<br>processa</div>
+  <div class="flow-arrow">&rarr;</div>
+  <div class="flow-node">Dexie.js<br>salva no<br>IndexedDB</div>
+  <div class="flow-arrow">&rarr;</div>
+  <div class="flow-node">Chart.js<br>le e renderiza<br>graficos</div>
+</div>
+
+<div class="tip-box">
+  <strong>Dica para o estudante:</strong> Essa arquitetura e chamada de "client-side only" ou "serverless frontend". Toda a logica roda no navegador. Isso significa custo zero de hospedagem, mas tambem significa que os dados ficam <em>apenas</em> naquele navegador. Se o usuario trocar de celular, os dados nao vao junto.
+</div>
+
+<h3>O que NAO usamos (e por que)</h3>
+<table>
+  <tr><th>Tecnologia</th><th>Por que nao usamos</th><th>Quando faria sentido</th></tr>
+  <tr><td>React / Vue / Angular</td><td>Complexidade desnecessaria para um app simples</td><td>Apps grandes com muitos componentes reutilizaveis</td></tr>
+  <tr><td>Servidor backend (Node, Python)</td><td>Custo, complexidade, manutencao</td><td>Quando dados precisam ser compartilhados entre usuarios</td></tr>
+  <tr><td>Banco de dados remoto</td><td>Custo e latencia</td><td>Quando multiplos dispositivos precisam sincronizar</td></tr>
+  <tr><td>localStorage</td><td>Limite de 5MB, so strings</td><td>Para dados muito simples (preferencias, tema)</td></tr>
+</table>
+
+<!-- ===== 3. DATA STORAGE ===== -->
+<div class="page-break"></div>
+<h2 id="data">3. Como os Dados Sao Armazenados</h2>
+
+<h3>IndexedDB: O Banco de Dados do Navegador</h3>
+<p>Navegadores modernos tem um banco de dados embutido chamado <strong>IndexedDB</strong>. Diferente do <code>localStorage</code> (que so guarda texto e tem limite de 5MB), o IndexedDB pode armazenar objetos complexos, fazer buscas por indice e lidar com megabytes de dados.</p>
+
+<p>O problema? A API nativa do IndexedDB e <strong>horrivel de usar</strong> &mdash; verbosa, baseada em callbacks, confusa. Por isso usamos o <strong>Dexie.js</strong>, uma biblioteca que simplifica tudo.</p>
+
+<h3>Inicializacao do Banco</h3>
+<pre><code><span class="cm">// Criando o banco de dados com Dexie.js</span>
+<span class="kw">const</span> db = <span class="kw">new</span> <span class="fn">Dexie</span>(<span class="str">'BolletteFinal'</span>);
+
+<span class="cm">// Definindo o schema (estrutura das tabelas)</span>
+db.<span class="fn">version</span>(<span class="num">1</span>).<span class="fn">stores</span>({
+  records: <span class="str">'++id, &month'</span>
+  <span class="cm">// ++id  = chave primaria auto-incremento</span>
+  <span class="cm">// &month = indice UNICO (nao pode repetir)</span>
+});</code></pre>
+
+<div class="why-box">
+  <strong>Por que <code>&amp;month</code> (indice unico)?</strong> Queremos apenas UM registro por mes. Se o usuario salvar "luce" em janeiro e depois "gas" em janeiro, os valores devem ir para o <em>mesmo</em> registro. O <code>&amp;</code> garante que o Dexie lance um erro se tentarmos criar dois registros com o mesmo mes &mdash; e ai usamos a logica de upsert para mesclar.
+</div>
+
+<h3>Estrutura de um Registro</h3>
+<pre><code><span class="cm">// Exemplo de um registro no banco</span>
+{
+  <span class="prop">id</span>: <span class="num">1</span>,                          <span class="cm">// auto-gerado</span>
+  <span class="prop">month</span>: <span class="str">"2024-01"</span>,               <span class="cm">// chave unica</span>
+  <span class="prop">luce</span>: <span class="num">85.50</span>,                    <span class="cm">// valor da luz em euros</span>
+  <span class="prop">luceDate</span>: <span class="str">"2024-01-15"</span>,         <span class="cm">// data da conta de luz</span>
+  <span class="prop">acqua</span>: <span class="num">42.00</span>,                   <span class="cm">// valor da agua</span>
+  <span class="prop">acquaDate</span>: <span class="str">"2024-01-20"</span>,        <span class="cm">// data da conta de agua</span>
+  <span class="prop">gas</span>: <span class="num">67.30</span>,                     <span class="cm">// valor do gas</span>
+  <span class="prop">gasDate</span>: <span class="str">"2024-01-18"</span>,          <span class="cm">// data da conta de gas</span>
+  <span class="prop">abitanti</span>: <span class="num">3</span>,                    <span class="cm">// numero de moradores</span>
+  <span class="prop">createdAt</span>: <span class="str">"2024-01-15T10:30:00Z"</span> <span class="cm">// timestamp</span>
+}</code></pre>
+
+<h3>A Logica de Upsert (Criar ou Atualizar)</h3>
+<p>Um dos padroes mais importantes do app: quando o usuario salva uma conta, verificamos se ja existe um registro para aquele mes. Se existir, <strong>mesclamos</strong> os dados. Se nao, criamos um novo.</p>
+
+<pre><code><span class="kw">async function</span> <span class="fn">saveRecord</span>(month, type, value, date, abitanti) {
+  <span class="cm">// 1. Buscar registro existente para esse mes</span>
+  <span class="kw">const</span> existing = <span class="kw">await</span> db.records
+    .<span class="fn">where</span>(<span class="str">'month'</span>)
+    .<span class="fn">equals</span>(month)
+    .<span class="fn">first</span>();
+
+  <span class="kw">if</span> (existing) {
+    <span class="cm">// 2a. VERIFICAR DUPLICATA: se ja tem valor para essa utilidade</span>
+    <span class="kw">if</span> (existing[type] !== <span class="kw">undefined</span> && existing[type] !== <span class="kw">null</span>) {
+      <span class="fn">alert</span>(<span class="str">'Ja existe um valor de '</span> + type + <span class="str">' para este mes!'</span>);
+      <span class="kw">return</span>;
+    }
+    <span class="cm">// 2b. UPSERT: mesclar novos dados no registro existente</span>
+    <span class="kw">await</span> db.records.<span class="fn">update</span>(existing.<span class="prop">id</span>, {
+      [type]: value,
+      [type + <span class="str">'Date'</span>]: date,
+      abitanti: abitanti
+    });
+  } <span class="kw">else</span> {
+    <span class="cm">// 3. CRIAR novo registro para o mes</span>
+    <span class="kw">await</span> db.records.<span class="fn">add</span>({
+      month: month,
+      [type]: value,
+      [type + <span class="str">'Date'</span>]: date,
+      abitanti: abitanti,
+      createdAt: <span class="kw">new</span> <span class="fn">Date</span>().<span class="fn">toISOString</span>()
+    });
+  }
+}</code></pre>
+
+<div class="diagram-box">
+         Usuario clica "Salvar"
+                  |
+                  v
+    +----------------------------+
+    | Buscar registro do mes     |
+    | db.records.where('month')  |
+    +----------------------------+
+           |              |
+      Existe?          Nao existe?
+           |              |
+           v              v
+  +----------------+  +-----------------+
+  | Ja tem valor   |  | Criar registro  |
+  | dessa utilid.? |  | db.records.add  |
+  +----------------+  +-----------------+
+     |          |
+   Sim         Nao
+     |          |
+     v          v
+  +-------+  +------------------+
+  | ERRO! |  | Atualizar regist.|
+  | Alerta|  | db.records.update|
+  +-------+  +------------------+
+<span class="label">Figura 2: Fluxo de salvamento (upsert com protecao de duplicatas)</span>
+</div>
+
+<h3>Persistencia de Dados</h3>
+<p>Navegadores podem decidir <strong>apagar dados</strong> do IndexedDB quando o espaco em disco esta baixo. Para prevenir isso, usamos a Storage API:</p>
+
+<pre><code><span class="cm">// Pedir ao navegador para NAO apagar nossos dados</span>
+<span class="kw">if</span> (navigator.storage && navigator.storage.<span class="fn">persist</span>) {
+  navigator.storage.<span class="fn">persist</span>().<span class="fn">then</span>(<span class="kw">function</span>(granted) {
+    <span class="kw">if</span> (granted) {
+      console.<span class="fn">log</span>(<span class="str">"Armazenamento persistente concedido!"</span>);
+    }
+  });
+}</code></pre>
+
+<div class="warn-box">
+  <strong>Atencao:</strong> Mesmo com <code>persist()</code>, os dados ficam APENAS naquele navegador. Se o usuario limpar os dados de navegacao, usar modo anonimo ou trocar de aparelho, tudo se perde. Para um app de producao serio, voce precisaria de um backend.
+</div>
+
+<!-- ===== 4. FEATURES ===== -->
+<div class="page-break"></div>
+<h2 id="features">4. Funcionalidades Principais</h2>
+
+<h3>4.1 Reconhecimento de Voz</h3>
+<p>O app permite que o usuario <strong>dite os valores</strong> em vez de digitar. Isso e especialmente util no celular. Usamos a <strong>Web Speech API</strong>, que esta disponivel nativamente no Chrome.</p>
+
+<pre><code><span class="cm">// Inicializando o reconhecimento de voz</span>
+<span class="kw">const</span> recognition = <span class="kw">new</span> (<span class="prop">window</span>.SpeechRecognition
+  || <span class="prop">window</span>.webkitSpeechRecognition)();
+
+recognition.<span class="prop">lang</span> = <span class="str">'it-IT'</span>;  <span class="cm">// Italiano como padrao</span>
+recognition.<span class="prop">continuous</span> = <span class="kw">false</span>;
+recognition.<span class="prop">interimResults</span> = <span class="kw">false</span>;
+
+recognition.<span class="fn">onresult</span> = <span class="kw">function</span>(event) {
+  <span class="kw">const</span> texto = event.results[<span class="num">0</span>][<span class="num">0</span>].transcript;
+  <span class="cm">// Extrair numero do texto falado</span>
+  <span class="kw">const</span> numero = <span class="fn">parseFloat</span>(
+    texto.<span class="fn">replace</span>(<span class="str">/[^\d.,]/g</span>, <span class="str">''</span>).<span class="fn">replace</span>(<span class="str">','</span>, <span class="str">'.'</span>)
+  );
+  <span class="cm">// Preencher o campo com o valor extraido</span>
+  document.<span class="fn">getElementById</span>(<span class="str">'valor'</span>).<span class="prop">value</span> = numero;
+};</code></pre>
+
+<div class="tip-box">
+  <strong>Dica:</strong> A Web Speech API so funciona bem no Chrome (desktop e Android). No Safari e Firefox, o suporte e limitado ou inexistente. Sempre tenha um fallback (neste caso, o campo de texto normal).
+</div>
+
+<h3>4.2 Graficos Interativos</h3>
+<p>Usamos <strong>Chart.js</strong> para criar 4 tipos de visualizacao:</p>
+
+<table>
+  <tr><th>Grafico</th><th>Tipo</th><th>O que Mostra</th></tr>
+  <tr><td>Gastos por Mes</td><td>Barras</td><td>Total em euros de cada mes</td></tr>
+  <tr><td>Andamento (Tendencia)</td><td>Linhas</td><td>Evolucao de Luce/Acqua/Gas com filtro</td></tr>
+  <tr><td>Distribuicao</td><td>Rosquinha (Doughnut)</td><td>Percentual de cada utilidade</td></tr>
+  <tr><td>Custo por Pessoa</td><td>Barras Empilhadas</td><td>Divisao por morador</td></tr>
+</table>
+
+<pre><code><span class="cm">// Exemplo simplificado: grafico de barras</span>
+<span class="kw">new</span> <span class="fn">Chart</span>(ctx, {
+  <span class="prop">type</span>: <span class="str">'bar'</span>,
+  <span class="prop">data</span>: {
+    <span class="prop">labels</span>: [<span class="str">'Jan'</span>, <span class="str">'Fev'</span>, <span class="str">'Mar'</span>],
+    <span class="prop">datasets</span>: [{
+      <span class="prop">label</span>: <span class="str">'Gastos (EUR)'</span>,
+      <span class="prop">data</span>: [<span class="num">195</span>, <span class="num">180</span>, <span class="num">210</span>],
+      <span class="prop">backgroundColor</span>: <span class="str">'rgba(21, 101, 192, 0.7)'</span>
+    }]
+  },
+  <span class="prop">plugins</span>: [ChartDataLabels]  <span class="cm">// mostra valores em cima das barras</span>
+});</code></pre>
+
+<h3>4.3 Compartilhamento</h3>
+<p>A <strong>Web Share API</strong> permite usar o botao nativo de compartilhamento do sistema operacional (WhatsApp, email, Telegram, etc.):</p>
+
+<pre><code><span class="kw">async function</span> <span class="fn">shareReport</span>(text) {
+  <span class="kw">if</span> (navigator.<span class="prop">share</span>) {
+    <span class="kw">await</span> navigator.<span class="fn">share</span>({
+      <span class="prop">title</span>: <span class="str">'Bollette di Casa'</span>,
+      <span class="prop">text</span>: text  <span class="cm">// Relatorio formatado</span>
+    });
+  }
+}</code></pre>
+
+<h3>4.4 Tres Idiomas</h3>
+<p>O app suporta italiano (padrao), espanhol e portugues. A implementacao usa um objeto de traducoes:</p>
+
+<pre><code><span class="kw">const</span> i18n = {
+  <span class="prop">it</span>: { <span class="prop">save</span>: <span class="str">'Salva'</span>, <span class="prop">month</span>: <span class="str">'Mese'</span>, ... },
+  <span class="prop">es</span>: { <span class="prop">save</span>: <span class="str">'Guardar'</span>, <span class="prop">month</span>: <span class="str">'Mes'</span>, ... },
+  <span class="prop">pt</span>: { <span class="prop">save</span>: <span class="str">'Salvar'</span>, <span class="prop">month</span>: <span class="str">'Mes'</span>, ... }
+};
+
+<span class="kw">function</span> <span class="fn">setLanguage</span>(lang) {
+  <span class="cm">// Atualizar todos os textos da interface</span>
+  document.<span class="fn">querySelectorAll</span>(<span class="str">'[data-i18n]'</span>)
+    .<span class="fn">forEach</span>(el => {
+      el.<span class="prop">textContent</span> = i18n[lang][el.dataset.<span class="prop">i18n</span>];
+    });
+}</code></pre>
+
+<!-- ===== 5. EVOLUTION ===== -->
+<div class="page-break"></div>
+<h2 id="evolution">5. Processo de Desenvolvimento (12+ Iteracoes)</h2>
+
+<p>Este app nao nasceu pronto. Ele evoluiu ao longo de <strong>mais de 12 versoes</strong>, cada uma adicionando funcionalidades ou corrigindo bugs. Isso e normal &mdash; software profissional e feito em iteracoes.</p>
+
+<div class="timeline">
+  <div class="timeline-item no-break">
+    <span class="timeline-version">v1 - O Comeco</span>
+    <p class="timeline-desc">App basico com formulario, reconhecimento de voz, IndexedDB e graficos simples. Tudo funcionava, mas a interface era feia e o codigo desorganizado.</p>
+  </div>
+  <div class="timeline-item no-break">
+    <span class="timeline-version">v2 - Redesign Premium</span>
+    <p class="timeline-desc">Interface completamente refeita com design profissional. Italiano como idioma padrao. Datas individuais por utilidade (luceDate, acquaDate, gasDate) em vez de uma data unica.</p>
+  </div>
+  <div class="timeline-item no-break">
+    <span class="timeline-version">v6 - Compartilhamento</span>
+    <p class="timeline-desc">Adicionado compartilhamento via WhatsApp/email com Web Share API. Historico agrupado por mes para visualizacao mais clara.</p>
+  </div>
+  <div class="timeline-item no-break">
+    <span class="timeline-version">v8 - Um Registro por Mes</span>
+    <p class="timeline-desc">Mudanca arquitetural importante: em vez de um registro por utilidade, agora um unico registro por mes contem luce + acqua + gas. Logica de upsert implementada. Precos exibidos diretamente nos graficos.</p>
+  </div>
+  <div class="timeline-item no-break">
+    <span class="timeline-version">v9 - Bloqueio de Duplicatas</span>
+    <p class="timeline-desc">Se o usuario tenta salvar "luce" para janeiro e ja existe um valor de luce em janeiro, o app bloqueia e mostra um alerta. Isso previne sobrescrita acidental.</p>
+  </div>
+  <div class="timeline-item no-break">
+    <span class="timeline-version">v11 - Limpeza e Filtros</span>
+    <p class="timeline-desc">Graficos redundantes removidos. Adicionados botoes de filtro no grafico de Andamento para mostrar/esconder Luce, Acqua e Gas individualmente.</p>
+  </div>
+  <div class="timeline-item no-break">
+    <span class="timeline-version">Correcoes de Bugs</span>
+    <p class="timeline-desc">Espaco no keypath do IndexedDB causava erro. Indice de mes faltando. Botao de salvar posicionado incorretamente. Cada bug ensinou algo novo.</p>
+  </div>
+</div>
+
+<div class="why-box">
+  <strong>Por que tantas versoes?</strong> Software nunca fica "pronto" na primeira tentativa. Cada versao resolve problemas descobertos pelos usuarios reais. O segredo nao e acertar de primeira, mas <strong>iterar rapidamente</strong> e melhorar continuamente.
+</div>
+
+<!-- ===== 6. TECHNOLOGIES ===== -->
+<h2 id="tech">6. Tecnologias Utilizadas</h2>
+
+<div class="tech-grid">
+  <div class="tech-card no-break">
+    <h4>HTML / CSS / JavaScript</h4>
+    <p>As tres linguagens fundamentais da web. Sem frameworks. O HTML define a estrutura, o CSS o visual e o JS a logica. Dominar essas tres e a base de tudo.</p>
+  </div>
+  <div class="tech-card no-break">
+    <h4>Dexie.js</h4>
+    <p>Wrapper para IndexedDB que transforma uma API complicada em chamadas simples com Promises e async/await. Tamanho minimo (~45KB). <em>Por que:</em> a API nativa do IndexedDB exige muito codigo boilerplate.</p>
+  </div>
+  <div class="tech-card no-break">
+    <h4>Chart.js</h4>
+    <p>Biblioteca de graficos responsivos baseada em Canvas. Facil de usar, bonita por padrao e com ecossistema de plugins. <em>Por que:</em> criar graficos SVG manualmente seria extremamente trabalhoso.</p>
+  </div>
+  <div class="tech-card no-break">
+    <h4>chartjs-plugin-datalabels</h4>
+    <p>Plugin para Chart.js que exibe valores diretamente nas barras/linhas dos graficos. <em>Por que:</em> sem ele, o usuario precisa passar o mouse sobre cada ponto para ver o valor.</p>
+  </div>
+  <div class="tech-card no-break">
+    <h4>Web Speech API</h4>
+    <p>API nativa do navegador para reconhecimento de voz. Sem custo, sem API key. <em>Limitacao:</em> funciona bem apenas no Chrome. <em>Por que:</em> entrada por voz e mais pratica no celular do que digitar numeros.</p>
+  </div>
+  <div class="tech-card no-break">
+    <h4>Web Share API</h4>
+    <p>API nativa para compartilhamento. Abre o menu de compartilhamento do sistema operacional (WhatsApp, email, etc.). <em>Por que:</em> integracao nativa e melhor que links manuais de "compartilhar no WhatsApp".</p>
+  </div>
+  <div class="tech-card no-break">
+    <h4>GitHub Pages</h4>
+    <p>Hospedagem gratuita para sites estaticos diretamente de um repositorio GitHub. HTTPS incluido. <em>Por que:</em> custo zero e deploy automatico a cada push.</p>
+  </div>
+  <div class="tech-card no-break">
+    <h4>CDN (Content Delivery Network)</h4>
+    <p>Bibliotecas externas carregadas via CDN (jsDelivr/cdnjs) em vez de incluir os arquivos. <em>Por que:</em> menos codigo no repositorio e cache compartilhado entre sites.</p>
+  </div>
+</div>
+
+<!-- ===== 7. GITHUB PAGES ===== -->
+<div class="page-break"></div>
+<h2 id="ghpages">7. Como o GitHub Pages Funciona</h2>
+
+<p>GitHub Pages e um servico <strong>gratuito</strong> do GitHub que transforma um repositorio em um site web. Veja como:</p>
+
+<h3>Passo a Passo</h3>
+<ol>
+  <li><strong>Criar um repositorio</strong> no GitHub (ex: <code>House-Taxes</code>)</li>
+  <li><strong>Adicionar um <code>index.html</code></strong> na raiz do repositorio</li>
+  <li><strong>Ativar GitHub Pages</strong>: Settings &rarr; Pages &rarr; Source: "Deploy from branch" &rarr; Branch: main</li>
+  <li><strong>Aguardar o deploy</strong> (geralmente 1-2 minutos)</li>
+  <li><strong>Acessar</strong>: <code>https://SEU-USUARIO.github.io/NOME-DO-REPO/</code></li>
+</ol>
+
+<div class="diagram-box">
+  Seu Computador          GitHub              GitHub Pages CDN
+  +-----------+      +-------------+      +-------------------+
+  | index.html| ---> | Repositorio | ---> | Site publicado    |
+  | (git push)|      | House-Taxes |      | HTTPS automatico  |
+  +-----------+      +-------------+      +-------------------+
+        |                   |                      |
+     Editar            git push             Usuarios acessam
+     codigo            = deploy!            pelo celular
+<span class="label">Figura 3: Fluxo de deploy com GitHub Pages</span>
+</div>
+
+<h3>Vantagens</h3>
+<ul>
+  <li><strong>Custo zero</strong> &mdash; totalmente gratuito para repositorios publicos</li>
+  <li><strong>HTTPS automatico</strong> &mdash; certificado SSL gratis (necessario para Web Speech API e Web Share API)</li>
+  <li><strong>Deploy automatico</strong> &mdash; cada <code>git push</code> atualiza o site</li>
+  <li><strong>Uptime excelente</strong> &mdash; infraestrutura do GitHub</li>
+</ul>
+
+<div class="warn-box">
+  <strong>Limitacoes:</strong> Apenas sites estaticos (HTML/CSS/JS). Nao roda PHP, Python, Node.js no servidor. Limite de 1GB para o repositorio e 100GB de banda por mes (mais que suficiente para um app pessoal).
+</div>
+
+<h3>Por que HTTPS e Importante</h3>
+<p>Varias APIs modernas do navegador <strong>exigem</strong> conexao HTTPS:</p>
+<ul>
+  <li><code>navigator.storage.persist()</code> &mdash; persistencia de dados</li>
+  <li><code>SpeechRecognition</code> &mdash; reconhecimento de voz</li>
+  <li><code>navigator.share()</code> &mdash; compartilhamento nativo</li>
+</ul>
+<p>Sem HTTPS, essas funcionalidades simplesmente nao funcionam. GitHub Pages fornece HTTPS automaticamente.</p>
+
+<!-- ===== 8. LESSONS ===== -->
+<h2 id="lessons">8. Licoes Aprendidas</h2>
+
+<h3>8.1 Comece Simples, Melhore Depois</h3>
+<p>A v1 era feia e basica, mas <strong>funcionava</strong>. Isso e mais valioso do que um design perfeito que nunca fica pronto. Lance a versao minima viavel (MVP) e itere.</p>
+
+<h3>8.2 Bugs Sao Professores</h3>
+<p>Um espaco no keypath do IndexedDB (<code>"++ id"</code> em vez de <code>"++id"</code>) causou horas de debug. Um indice de mes faltando fazia buscas falharem silenciosamente. Cada bug ensinou algo que nenhum tutorial ensinaria.</p>
+
+<div class="tip-box">
+  <strong>Dica:</strong> Quando encontrar um bug, antes de corrigi-lo, entenda <em>por que</em> ele aconteceu. Isso te faz um programador melhor do que simplesmente copiar uma solucao do Stack Overflow.
+</div>
+
+<h3>8.3 APIs Nativas Sao Poderosas</h3>
+<p>Antes de instalar uma biblioteca, verifique se o navegador ja tem uma API para o que voce precisa. Web Speech API, Web Share API, IndexedDB, Service Workers &mdash; os navegadores modernos fazem muito mais do que voce imagina.</p>
+
+<h3>8.4 Dados Sao o Coracao do App</h3>
+<p>O design mudou varias vezes. Funcionalidades foram adicionadas e removidas. Mas a <strong>modelagem dos dados</strong> (um registro por mes com campos para cada utilidade) foi a decisao que mais impactou a arquitetura. Invista tempo pensando na estrutura dos dados antes de comecar a codar.</p>
+
+<h3>8.5 Custo Zero e Possivel</h3>
+<p>Este app roda 24/7, com HTTPS, para qualquer numero de usuarios, sem custar um unico centavo. A combinacao GitHub Pages + IndexedDB + CDNs gratuitas torna possivel criar e publicar software real sem cartao de credito.</p>
+
+<h3>8.6 Pense no Usuario</h3>
+<p>Funcionalidades como reconhecimento de voz e compartilhamento nativo existem porque pensamos em <em>como</em> o usuario usaria o app (no celular, na cozinha, querendo enviar o relatorio para o colega de casa). Tecnologia pela tecnologia nao tem valor &mdash; tecnologia que resolve um problema, sim.</p>
+
+<div class="no-break" style="margin-top: 10mm; padding: 5mm; background: #e3f2fd; border-radius: 8px;">
+  <h3 style="color: #0d47a1; margin-top: 0;">Resumo Final</h3>
+  <p style="margin-bottom: 2mm;"><strong>O que construimos:</strong> Um app web completo para rastrear contas domesticas, com voz, graficos e compartilhamento.</p>
+  <p style="margin-bottom: 2mm;"><strong>Como:</strong> Um unico arquivo HTML com CSS e JavaScript inline, usando bibliotecas via CDN.</p>
+  <p style="margin-bottom: 2mm;"><strong>Onde:</strong> GitHub Pages (gratuito, HTTPS, deploy automatico).</p>
+  <p style="margin-bottom: 2mm;"><strong>Dados:</strong> IndexedDB via Dexie.js, tudo no navegador do usuario.</p>
+  <p style="margin-bottom: 0;"><strong>Maior licao:</strong> Voce nao precisa de ferramentas caras ou frameworks complexos para criar software util. Precisa de um problema real, as tecnologias certas e vontade de iterar.</p>
+</div>
+
+<div class="doc-footer">
+  <p>Documento educacional &mdash; Bollette di Casa &mdash; Abril 2026</p>
+  <p>Repositorio: github.com/guxandobrat/House-Taxes</p>
+</div>
+
+</body>
+</html>
