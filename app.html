@@ -126,9 +126,6 @@
       <div class="ch-tabs" id="chTabs"></div>
       <div class="ch-card"><div class="ch-tit" id="chTit"></div><canvas id="chCanvas"></canvas></div>
       <button class="rb rb-pdf" onclick="expPDF()"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span data-i18n="xpdf">Esporta PDF</span></button>
-      <button class="rb rb-bk" onclick="expBk()"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg><span data-i18n="xbk">Esporta Backup</span></button>
-      <button class="rb rb-bk" onclick="$('impF').click()"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg><span data-i18n="ibk">Importa Backup</span></button>
-      <input type="file" id="impF" accept=".json" style="display:none" onchange="impBk(event)">
     </div>
   </div>
   <div class="sf" id="sf"><button class="sv-btn" onclick="save()"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg><span data-i18n="save">Salva</span></button><button class="sh-btn" id="shBtn" onclick="doShare()">📤 WhatsApp</button></div>
@@ -370,8 +367,6 @@ function bOpt(dl){return{responsive:true,maintainAspectRatio:true,plugins:{legen
 
 // ====== EXPORT ======
 function expPDF(){html2pdf().set({margin:6,filename:'bollette.pdf',image:{type:'jpeg',quality:.95},html2canvas:{scale:2},jsPDF:{unit:'mm',format:'a4',orientation:'portrait'}}).from($('repC')).save()}
-async function expBk(){const r=await db.records.toArray();const b=new Blob([JSON.stringify({v:4,lang,records:r,at:new Date().toISOString()},null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='bollette-'+new Date().toISOString().slice(0,10)+'.json';a.click();URL.revokeObjectURL(a.href);toast(t('bOk'),'success')}
-async function impBk(e){const f=e.target.files[0];if(!f)return;try{const d=JSON.parse(await f.text());if(!d.records)throw 0;await db.records.clear();for(const r of d.records){const mo=r.month||r.luceDate?.slice(0,7)||r.acquaDate?.slice(0,7)||r.gasDate?.slice(0,7)||r.createdAt?.slice(0,7)||'2026-01';await db.records.put({month:mo,luce:r.luce||0,luceDate:r.luceDate||'',acqua:r.acqua||0,acquaDate:r.acquaDate||'',gas:r.gas||0,gasDate:r.gasDate||'',abitanti:r.abitanti||r.moradores||4,createdAt:r.createdAt||new Date().toISOString()})}toast(t('iOk'),'success');rHist();rRep()}catch(err){toast(t('iFail'),'error')}e.target.value=''}
 
 // ====== UTILS ======
 function fDs(d){if(!d)return'';const p=d.split('-');return parseInt(p[2])+' '+T[lang].mn[parseInt(p[1])-1]}

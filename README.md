@@ -8,18 +8,18 @@ App web per tracciare le bollette domestiche (luce, acqua, gas), pensata per ess
 
 - Registra le bollette di **luce, acqua e gas** con valore e data fattura
 - Ogni mese ha **un unico record** — se aggiungi luce ad aprile e poi acqua ad aprile, si fondono
-- **Riconoscimento vocale** — tocca il microfone, parla i valori, i campi si compilano
+- **Blocco duplicati** — non permette di sovrascrivere una bolletta gia registrata per quel mese
+- **Riconoscimento vocale** — tocca il microfono, parla i valori, i campi si compilano
 - **Storico** raggruppato per mese/anno, con valori in grigio se non ancora inseriti
-- **Report** con 5 grafici interattivi (tutti con prezzi visibili sulle barre):
-  - € / Mese (barre comparative luce/acqua/gas)
-  - € / Giorno (costo giornaliero calcolato dal periodo reale tra fatture)
-  - Andamento (linee di evoluzione totale + per categoria)
-  - Distribuzione (grafico a ciambella con percentuali)
-  - Per Persona (costo mensile diviso per numero di abitanti)
-- **Navigazione mesi** nel report con frecce ◀ ▶
+- **Report** con 4 grafici interattivi (prezzi visibili su barre e linee):
+  - **€ / Mese** — barre comparative luce/acqua/gas con valori dentro le barre
+  - **Andamento** — linee di evoluzione con filtri Luce/Acqua/Gas
+  - **Distribuzione** — grafico a ciambella con percentuali e valori
+  - **Per Persona** — barre empilhadas colorate per tipo di bolletta
+- **Navigazione mesi** nel report con frecce ◀ ▶ (filtra grafici e sommario)
+- **Sommario** con totale del mese + costo per persona
 - **Condividi via WhatsApp** — dopo il salvataggio o da qualsiasi record nello storico
 - **Esporta PDF** del report
-- **Backup/Ripristino** in formato JSON
 - **3 lingue**: Italiano (default), Castellano, Portugues — cambia dall'icona ingranaggio
 
 ## Come funziona
@@ -49,7 +49,7 @@ Un record per mese (`&month` = indice unico):
 }
 ```
 
-Quando salvi una bolletta per un mese che esiste gia, i valori nuovi si **fondono** nel record esistente (upsert).
+Quando salvi una bolletta per un mese che esiste gia, i valori nuovi si **fondono** nel record esistente (upsert). Se la bolletta specifica (es. Luce) gia esiste per quel mese, viene bloccata con messaggio di errore.
 
 ## Come usare
 
@@ -57,63 +57,47 @@ Quando salvi una bolletta per un mese che esiste gia, i valori nuovi si **fondon
 2. Vai su **Registra**, inserisci i valori e le date
 3. Il bottone **Salva** appare quando inserisci qualcosa
 4. Dopo il salvataggio, puoi **condividere via WhatsApp** con i coinquilini
-5. In **Storico** vedi tutti i mesi, puoi modificare o eliminare
-6. In **Report** naviga tra i grafici e i mesi
+5. In **Storico** vedi tutti i mesi, puoi modificare, eliminare o condividere
+6. In **Report** naviga tra i grafici con i tab e tra i mesi con ◀ ▶
 
 ## Changelog
 
+### v12 (2026-04-14)
+- Rimossi bottoni Esporta/Importa Backup
+- Rimosso grafico €/Giorno (redundante con Andamento)
+- Rimosso filtro "Tutti" da Andamento (solo Luce/Acqua/Gas)
+- Sommario mostra **Totale** + **Per Persona** insieme
+- Andamento con filtro ⚡💧🔥 per vedere tutte le linee
+- Per Persona con barre empilhadas colorate per bolletta
+- Prezzi dentro le barre (bianco) per evitare sovrapposizione
+
 ### v9 (2026-04-14)
-- **Blocco duplicati**: se una bolletta esiste gia per quel mese, mostra errore e non salva
-- Messaggio: "Luce — Aprile 2026 gia registrata! Modifica dallo Storico."
-- Per cambiare un valore esistente, usare Modifica dallo Storico
+- Blocco duplicati: errore se bolletta gia esiste per quel mese
 
 ### v8 (2026-04-14)
-- **1 record per mese**: salvataggi multipli per lo stesso mese si fondono
-- **Prezzi sui grafici**: tutte le barre e linee mostrano il valore in €
-- **Navigazione mesi**: frecce ◀ ▶ nel report per filtrare per mese
-- **Ordinamento corretto**: mesi sempre in ordine cronologico
-- **Migrazione automatica** da tutti i database precedenti
-
-### v7 (2026-04-14)
-- Migrazione automatica dati da DB vecchi
-- Bottone salva nascosto, appare con animazione quando si inserisce un valore
+- 1 record per mese con upsert
+- Prezzi sui grafici, navigazione mesi, ordinamento corretto
+- Migrazione automatica da database precedenti
 
 ### v6 (2026-04-14)
-- Condivisione WhatsApp/email via Web Share API
-- Storico raggruppato per mese con valori zero in grigio
-- Report con 5 tab di grafici (€/mese, €/giorno, andamento, distribuzione, per persona)
-- Costo giornaliero basato sul periodo reale tra fatture
-
-### v5 (2026-04-14)
-- Fix errore IndexedDB keypath (spazi negli indici)
-- Fix `orderBy('createdAt')` su campo non indicizzato
-
-### v4 (2026-04-14)
-- Navigazione automatica allo storico dopo il salvataggio
-- try/catch su salvataggio per mostrare errori
-
-### v3 (2026-04-14)
-- Bottone salva disattivato fino a modifica
-- Modifica e eliminazione nello storico
+- Condivisione WhatsApp via Web Share API
+- Storico per mese, valori zero in grigio
+- Report con tab di grafici
 
 ### v2 (2026-04-14)
-- Redesign completo: UI premium, italiano default
-- Data fattura separata per ogni bolletta
-- Grafici basati sul periodo tra fatture
-- Rimossa tela Home, 3 tab (Registra/Storico/Report)
-- Ingranaggio per cambio lingua (IT/ES/PT)
-- Rimosso campo status (pago/pendente)
+- Redesign UI premium, italiano default
+- Data fattura separata per bolletta
+- 3 tab (Registra/Storico/Report), ingranaggio per lingua
 
 ### v1 (2026-04-14)
-- Prima versione funzionante
-- Riconoscimento vocale, IndexedDB, Chart.js, esportazione PDF/backup
+- Prima versione: riconoscimento vocale, IndexedDB, Chart.js, PDF
 
 ## Struttura
 
 ```
-index.html    ← app completa (HTML + CSS + JS inline)
-app.html      ← copia di index.html
-README.md     ← questo file
+index.html    <- app completa (HTML + CSS + JS inline)
+app.html      <- copia di index.html
+README.md     <- questo file
 ```
 
 ## Hosting
@@ -123,5 +107,5 @@ GitHub Pages, deploy automatico dal branch `main`. Gratis.
 ## Limitazioni
 
 - **Riconoscimento vocale**: richiede internet (Chrome Android funziona bene, iOS Safari limitato)
-- **Dati nel browser**: se cancelli i dati del browser, perdi lo storico — usa il backup JSON
+- **Dati nel browser**: se cancelli i dati del browser, perdi lo storico
 - **iOS nella UE**: PWA standalone non supportata da Apple — funziona come sito normale
