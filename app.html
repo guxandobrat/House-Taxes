@@ -119,18 +119,25 @@ input,select,button{font-family:inherit}
 .transcript-label{font-weight:700;font-size:11px;margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px}
 
 /* FLOATING SAVE */
-.save-float{position:fixed;bottom:calc(var(--nav-h) + 16px);left:50%;max-width:440px;width:calc(100% - 40px);transform:translateX(-50%) translateY(100px);opacity:0;pointer-events:none;transition:all .35s cubic-bezier(.4,0,.2,1);z-index:90}
-.save-float.visible{transform:translateX(-50%) translateY(0);opacity:1;pointer-events:auto}
-.save-btn{width:100%;padding:16px;border:none;border-radius:14px;background:linear-gradient(135deg,var(--success),#059669);color:#fff;font-size:16px;font-weight:700;cursor:pointer;box-shadow:0 6px 24px rgba(16,185,129,.35);display:flex;align-items:center;justify-content:center;gap:8px;transition:all .2s;letter-spacing:.3px}
-.save-btn:active{transform:scale(.97)}
+.save-float{position:fixed;bottom:calc(var(--nav-h) + 16px);left:50%;max-width:440px;width:calc(100% - 40px);transform:translateX(-50%);transition:all .35s cubic-bezier(.4,0,.2,1);z-index:90;display:none}
+.save-float.on-registra{display:block}
+.save-btn{width:100%;padding:16px;border:none;border-radius:14px;background:#94a3b8;color:rgba(255,255,255,.6);font-size:16px;font-weight:700;cursor:not-allowed;box-shadow:none;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .3s;letter-spacing:.3px}
+.save-float.dirty .save-btn{background:linear-gradient(135deg,var(--success),#059669);color:#fff;cursor:pointer;box-shadow:0 6px 24px rgba(16,185,129,.35)}
+.save-float.dirty .save-btn:active{transform:scale(.97)}
 .save-btn svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2.5}
 
 /* HISTORY */
-.h-item{background:var(--card);border-radius:var(--radius);padding:16px;margin-bottom:10px;box-shadow:var(--shadow);display:flex;justify-content:space-between;align-items:center;cursor:pointer;transition:all .2s;animation:cardIn .3s ease both}
-.h-item:active{transform:scale(.98);background:#fafafa}
+.h-item{background:var(--card);border-radius:var(--radius);padding:16px;margin-bottom:10px;box-shadow:var(--shadow);transition:all .2s;animation:cardIn .3s ease both}
+.h-top{display:flex;justify-content:space-between;align-items:center}
 .h-date{font-size:14px;font-weight:700;color:var(--text)}
 .h-detail{font-size:11px;color:var(--text3);margin-top:3px;line-height:1.4}
 .h-total{font-size:17px;font-weight:800;color:var(--text);text-align:right}
+.h-actions{display:flex;gap:8px;margin-top:10px;padding-top:10px;border-top:1px solid var(--border)}
+.h-act-btn{flex:1;padding:8px;border:none;border-radius:var(--radius-sm);font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;transition:all .15s}
+.h-act-btn:active{transform:scale(.95)}
+.h-act-btn svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2}
+.h-act-edit{background:#eef2ff;color:var(--primary)}
+.h-act-del{background:var(--gas-bg);color:var(--danger)}
 
 /* EMPTY */
 .empty{text-align:center;padding:48px 20px;color:var(--text3)}
@@ -170,6 +177,8 @@ input,select,button{font-family:inherit}
 .modal-btns .cancel{background:var(--bg);color:var(--text2)}
 .modal-btns .danger{background:var(--danger);color:#fff}
 .modal-btns button:active{transform:scale(.96)}
+.form-ed{flex:1;padding:10px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:14px;background:var(--bg);outline:none;transition:border .2s;color:var(--text)}
+.form-ed:focus{border-color:var(--primary)}
 
 /* TOAST */
 .toast{position:fixed;top:calc(var(--header-h) + 12px);left:50%;transform:translateX(-50%) translateY(-20px);background:var(--text);color:#fff;padding:10px 20px;border-radius:40px;font-size:13px;font-weight:600;opacity:0;transition:all .3s cubic-bezier(.4,0,.2,1);pointer-events:none;z-index:500;white-space:nowrap;box-shadow:var(--shadow-lg)}
@@ -309,6 +318,21 @@ input,select,button{font-family:inherit}
     </div>
   </div>
 
+  <div class="modal-bg" id="editModal">
+    <div class="modal">
+      <h3 data-i18n="editRecord">Modifica registro</h3>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div style="display:flex;gap:8px;align-items:center"><span style="font-size:18px">&#9889;</span><input type="number" step="0.01" id="edLuce" class="form-ed" inputmode="decimal"><input type="date" id="edLuceDate" class="form-ed"></div>
+        <div style="display:flex;gap:8px;align-items:center"><span style="font-size:18px">&#128167;</span><input type="number" step="0.01" id="edAcqua" class="form-ed" inputmode="decimal"><input type="date" id="edAcquaDate" class="form-ed"></div>
+        <div style="display:flex;gap:8px;align-items:center"><span style="font-size:18px">&#128293;</span><input type="number" step="0.01" id="edGas" class="form-ed" inputmode="decimal"><input type="date" id="edGasDate" class="form-ed"></div>
+      </div>
+      <div class="modal-btns" style="margin-top:16px">
+        <button class="cancel" onclick="closeEdit()" data-i18n="cancel">Annulla</button>
+        <button class="danger" style="background:var(--primary)" onclick="doEdit()" data-i18n="save">Salva</button>
+      </div>
+    </div>
+  </div>
+
   <nav class="nav">
     <button class="nav-btn active" data-screen="registra">
       <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
@@ -331,9 +355,9 @@ db.version(1).stores({records:'++id, luceDate, acquaDate, gasDate'});
 if(navigator.storage&&navigator.storage.persist) navigator.storage.persist();
 
 const I={
-  it:{luce:'Luce',acqua:'Acqua',invoiceDate:'Data fattura',abitanti:'Abitanti',tapToRecord:'Tocca per registrare',recording:'Registrando... tocca per fermare',audioHint:'"Luce 85 euro, acqua 42,50, gas 63,10"',audioUnsup:'Riconoscimento vocale non disponibile.',understood:'Capito:',save:'Salva',navReg:'Registra',navHistory:'Storico',navReport:'Report',costPerPerson:'Costo medio per persona / mese',monthlyComp:'Confronto per Periodo (EUR)',totalLine:'Totale nel Tempo (EUR)',costPerDay:'Costo Giornaliero (EUR/giorno)',distribution:'Distribuzione',exportPDF:'Esporta PDF',exportBackup:'Esporta Backup',importBackup:'Importa Backup',noData:'Registra le bollette per vedere il report',confirmDel:'Eliminare questo registro?',cancel:'Annulla',delete:'Elimina',savedOk:'Registro salvato!',deletedOk:'Registro eliminato!',backupOk:'Backup esportato!',importOk:'Backup importato!',importFail:'Errore importazione.',noHistory:'Nessun registro ancora',fillOne:'Compila almeno un valore',lingua:'Lingua',appTitle:'Bollette di Casa',speechLang:'it-IT',mn:['Gen','Feb','Mar','Apr','Mag','Giu','Lug','Ago','Set','Ott','Nov','Dic']},
-  es:{luce:'Luz',acqua:'Agua',invoiceDate:'Fecha factura',abitanti:'Habitantes',tapToRecord:'Toca para grabar',recording:'Grabando... toca para parar',audioHint:'"Luz 85 euros, agua 42,50, gas 63,10"',audioUnsup:'Reconocimiento de voz no disponible.',understood:'Entendido:',save:'Guardar',navReg:'Registrar',navHistory:'Historial',navReport:'Informe',costPerPerson:'Coste medio por persona / mes',monthlyComp:'Comparativo por Periodo (EUR)',totalLine:'Total en el Tiempo (EUR)',costPerDay:'Coste Diario (EUR/dia)',distribution:'Distribucion',exportPDF:'Exportar PDF',exportBackup:'Exportar Backup',importBackup:'Importar Backup',noData:'Registra facturas para ver el informe',confirmDel:'Eliminar este registro?',cancel:'Cancelar',delete:'Eliminar',savedOk:'Registro guardado!',deletedOk:'Registro eliminado!',backupOk:'Backup exportado!',importOk:'Backup importado!',importFail:'Error al importar.',noHistory:'Ningun registro aun',fillOne:'Rellena al menos un valor',lingua:'Idioma',appTitle:'Facturas de Casa',speechLang:'es-ES',mn:['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic']},
-  pt:{luce:'Luz',acqua:'Agua',invoiceDate:'Data fatura',abitanti:'Moradores',tapToRecord:'Toque para gravar',recording:'Gravando... toque para parar',audioHint:'"Luz 85 euros, agua 42,50, gas 63,10"',audioUnsup:'Reconhecimento de voz nao disponivel.',understood:'Entendi:',save:'Salvar',navReg:'Registrar',navHistory:'Historico',navReport:'Relatorio',costPerPerson:'Custo medio por pessoa / mes',monthlyComp:'Comparativo por Periodo (EUR)',totalLine:'Total no Tempo (EUR)',costPerDay:'Custo Diario (EUR/dia)',distribution:'Distribuicao',exportPDF:'Exportar PDF',exportBackup:'Exportar Backup',importBackup:'Importar Backup',noData:'Registre contas para ver o relatorio',confirmDel:'Apagar este registro?',cancel:'Cancelar',delete:'Apagar',savedOk:'Registro salvo!',deletedOk:'Registro apagado!',backupOk:'Backup exportado!',importOk:'Backup importado!',importFail:'Erro ao importar.',noHistory:'Nenhum registro ainda',fillOne:'Preencha pelo menos um valor',lingua:'Idioma',appTitle:'Contas da Casa',speechLang:'pt-PT',mn:['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez']}
+  it:{luce:'Luce',acqua:'Acqua',invoiceDate:'Data fattura',abitanti:'Abitanti',tapToRecord:'Tocca per registrare',recording:'Registrando... tocca per fermare',audioHint:'"Luce 85 euro, acqua 42,50, gas 63,10"',audioUnsup:'Riconoscimento vocale non disponibile.',understood:'Capito:',save:'Salva',navReg:'Registra',navHistory:'Storico',navReport:'Report',costPerPerson:'Costo medio per persona / mese',monthlyComp:'Confronto per Periodo (EUR)',totalLine:'Totale nel Tempo (EUR)',costPerDay:'Costo Giornaliero (EUR/giorno)',distribution:'Distribuzione',exportPDF:'Esporta PDF',exportBackup:'Esporta Backup',importBackup:'Importa Backup',noData:'Registra le bollette per vedere il report',confirmDel:'Eliminare questo registro?',cancel:'Annulla',delete:'Elimina',edit:'Modifica',editRecord:'Modifica registro',editOk:'Registro aggiornato!',savedOk:'Registro salvato!',deletedOk:'Registro eliminato!',backupOk:'Backup esportato!',importOk:'Backup importato!',importFail:'Errore importazione.',noHistory:'Nessun registro ancora',fillOne:'Compila almeno un valore',lingua:'Lingua',appTitle:'Bollette di Casa',speechLang:'it-IT',mn:['Gen','Feb','Mar','Apr','Mag','Giu','Lug','Ago','Set','Ott','Nov','Dic']},
+  es:{luce:'Luz',acqua:'Agua',invoiceDate:'Fecha factura',abitanti:'Habitantes',tapToRecord:'Toca para grabar',recording:'Grabando... toca para parar',audioHint:'"Luz 85 euros, agua 42,50, gas 63,10"',audioUnsup:'Reconocimiento de voz no disponible.',understood:'Entendido:',save:'Guardar',navReg:'Registrar',navHistory:'Historial',navReport:'Informe',costPerPerson:'Coste medio por persona / mes',monthlyComp:'Comparativo por Periodo (EUR)',totalLine:'Total en el Tiempo (EUR)',costPerDay:'Coste Diario (EUR/dia)',distribution:'Distribucion',exportPDF:'Exportar PDF',exportBackup:'Exportar Backup',importBackup:'Importar Backup',noData:'Registra facturas para ver el informe',confirmDel:'Eliminar este registro?',cancel:'Cancelar',delete:'Eliminar',edit:'Editar',editRecord:'Editar registro',editOk:'Registro actualizado!',savedOk:'Registro guardado!',deletedOk:'Registro eliminado!',backupOk:'Backup exportado!',importOk:'Backup importado!',importFail:'Error al importar.',noHistory:'Ningun registro aun',fillOne:'Rellena al menos un valor',lingua:'Idioma',appTitle:'Facturas de Casa',speechLang:'es-ES',mn:['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic']},
+  pt:{luce:'Luz',acqua:'Agua',invoiceDate:'Data fatura',abitanti:'Moradores',tapToRecord:'Toque para gravar',recording:'Gravando... toque para parar',audioHint:'"Luz 85 euros, agua 42,50, gas 63,10"',audioUnsup:'Reconhecimento de voz nao disponivel.',understood:'Entendi:',save:'Salvar',navReg:'Registrar',navHistory:'Historico',navReport:'Relatorio',costPerPerson:'Custo medio por pessoa / mes',monthlyComp:'Comparativo por Periodo (EUR)',totalLine:'Total no Tempo (EUR)',costPerDay:'Custo Diario (EUR/dia)',distribution:'Distribuicao',exportPDF:'Exportar PDF',exportBackup:'Exportar Backup',importBackup:'Importar Backup',noData:'Registre contas para ver o relatorio',confirmDel:'Apagar este registro?',cancel:'Cancelar',delete:'Apagar',edit:'Editar',editRecord:'Editar registro',editOk:'Registro atualizado!',savedOk:'Registro salvo!',deletedOk:'Registro apagado!',backupOk:'Backup exportado!',importOk:'Backup importado!',importFail:'Erro ao importar.',noHistory:'Nenhum registro ainda',fillOne:'Preencha pelo menos um valor',lingua:'Idioma',appTitle:'Contas da Casa',speechLang:'pt-PT',mn:['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez']}
 };
 let lang=localStorage.getItem('bollette_lang')||'it';
 const t=k=>(I[lang]&&I[lang][k])||I.it[k]||k;
@@ -357,8 +381,8 @@ function goTo(scr){
   document.querySelector(`.nav-btn[data-screen="${scr}"]`).classList.add('active');
   if(scr==='storico')refreshHistory();
   if(scr==='report')refreshReport();
-  if(scr!=='registra')document.getElementById('saveFloat').classList.remove('visible');
-  else checkDirty();
+  document.getElementById('saveFloat').classList.toggle('on-registra',scr==='registra');
+  if(scr==='registra')checkDirty();
 }
 document.querySelectorAll('.nav-btn').forEach(b=>b.addEventListener('click',()=>goTo(b.dataset.screen)));
 
@@ -368,7 +392,7 @@ function stepAb(d){abitanti=Math.max(1,Math.min(20,abitanti+d));document.getElem
 
 function checkDirty(){
   const d=document.getElementById('inLuce').value||document.getElementById('inAcqua').value||document.getElementById('inGas').value;
-  document.getElementById('saveFloat').classList.toggle('visible',!!d);
+  document.getElementById('saveFloat').classList.toggle('dirty',!!d);
 }
 
 const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
@@ -395,6 +419,7 @@ function parseVoice(raw){
 }
 
 async function saveRecord(){
+  if(!document.getElementById('saveFloat').classList.contains('dirty'))return;
   const luce=parseFloat(document.getElementById('inLuce').value)||0;
   const acqua=parseFloat(document.getElementById('inAcqua').value)||0;
   const gas=parseFloat(document.getElementById('inGas').value)||0;
@@ -412,7 +437,7 @@ async function saveRecord(){
   checkDirty();
 }
 
-let delId=null;
+let delId=null,editId=null;
 async function refreshHistory(){
   const recs=await db.records.orderBy('createdAt').reverse().toArray();
   const el=document.getElementById('historyList');
@@ -420,12 +445,36 @@ async function refreshHistory(){
   el.innerHTML=recs.map((r,i)=>{
     const total=(r.luce+r.acqua+r.gas).toFixed(2);
     const label=fmtDate(r.luceDate||r.acquaDate||r.gasDate);
-    return `<div class="h-item" style="animation-delay:${i*.05}s" onclick="openDel(${r.id},'${label}')"><div><div class="h-date">${label}</div><div class="h-detail">&#9889; ${r.luce.toFixed(2)} &nbsp; &#128167; ${r.acqua.toFixed(2)} &nbsp; &#128293; ${r.gas.toFixed(2)}</div></div><div><div class="h-total">${total} &euro;</div></div></div>`;
+    return `<div class="h-item" style="animation-delay:${i*.05}s">
+      <div class="h-top"><div><div class="h-date">${label}</div><div class="h-detail">&#9889; ${r.luce.toFixed(2)} &nbsp; &#128167; ${r.acqua.toFixed(2)} &nbsp; &#128293; ${r.gas.toFixed(2)}</div></div><div><div class="h-total">${total} &euro;</div></div></div>
+      <div class="h-actions">
+        <button class="h-act-btn h-act-edit" onclick="openEdit(${r.id})"><svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>${t('edit')}</button>
+        <button class="h-act-btn h-act-del" onclick="openDel(${r.id},'${label.replace(/'/g,"\\'")}')"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>${t('delete')}</button>
+      </div>
+    </div>`;
   }).join('');
 }
 function openDel(id,label){delId=id;document.getElementById('delModalText').textContent=label;document.getElementById('delModal').classList.add('show')}
 function closeDel(){delId=null;document.getElementById('delModal').classList.remove('show')}
 async function doDel(){if(delId)await db.records.delete(delId);closeDel();toast(t('deletedOk'),'success');refreshHistory()}
+async function openEdit(id){
+  const r=await db.records.get(id);if(!r)return;
+  editId=id;
+  document.getElementById('edLuce').value=r.luce;document.getElementById('edLuceDate').value=r.luceDate;
+  document.getElementById('edAcqua').value=r.acqua;document.getElementById('edAcquaDate').value=r.acquaDate;
+  document.getElementById('edGas').value=r.gas;document.getElementById('edGasDate').value=r.gasDate;
+  document.getElementById('editModal').classList.add('show');
+}
+function closeEdit(){editId=null;document.getElementById('editModal').classList.remove('show')}
+async function doEdit(){
+  if(!editId)return;
+  await db.records.update(editId,{
+    luce:parseFloat(document.getElementById('edLuce').value)||0,luceDate:document.getElementById('edLuceDate').value,
+    acqua:parseFloat(document.getElementById('edAcqua').value)||0,acquaDate:document.getElementById('edAcquaDate').value,
+    gas:parseFloat(document.getElementById('edGas').value)||0,gasDate:document.getElementById('edGasDate').value
+  });
+  closeEdit();toast(t('editOk'),'success');refreshHistory();
+}
 
 let chBar,chLine,chDaily,chPie;
 async function refreshReport(){
@@ -501,6 +550,7 @@ const today=new Date().toISOString().slice(0,10);
 document.getElementById('inLuceDate').value=today;
 document.getElementById('inAcquaDate').value=today;
 document.getElementById('inGasDate').value=today;
+document.getElementById('saveFloat').classList.add('on-registra');
 </script>
 </body>
 </html>
