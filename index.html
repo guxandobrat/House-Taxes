@@ -84,11 +84,10 @@ input,select,button{font-family:inherit}
 .trsc b{font-size:10px;display:block;margin-bottom:3px;text-transform:uppercase;letter-spacing:.4px}
 
 /* SAVE FLOAT */
-.sf{position:fixed;bottom:calc(var(--navh)+12px);left:50%;max-width:440px;width:calc(100% - 32px);transform:translateX(-50%);z-index:90;display:none}
-.sf.vis{display:flex;gap:8px}
-.sv-btn{flex:1;padding:14px;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:not-allowed;display:flex;align-items:center;justify-content:center;gap:6px;transition:all .3s;background:#94a3b8;color:rgba(255,255,255,.6);box-shadow:none}
-.sf.dirty .sv-btn{background:linear-gradient(135deg,var(--ok),#059669);color:#fff;cursor:pointer;box-shadow:0 4px 20px rgba(16,185,129,.3)}
-.sf.dirty .sv-btn:active{transform:scale(.97)}
+.sf{position:fixed;bottom:calc(var(--navh)+12px);left:50%;max-width:440px;width:calc(100% - 32px);transform:translateX(-50%) translateY(100px);opacity:0;pointer-events:none;z-index:90;transition:all .35s cubic-bezier(.4,0,.2,1);display:flex;gap:8px}
+.sf.pop{transform:translateX(-50%) translateY(0);opacity:1;pointer-events:auto}
+.sv-btn{flex:1;padding:14px;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;background:linear-gradient(135deg,var(--ok),#059669);color:#fff;box-shadow:0 6px 24px rgba(16,185,129,.35);transition:all .2s}
+.sv-btn:active{transform:scale(.97)}
 .sv-btn svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2.5}
 .sh-btn{padding:14px 16px;border:none;border-radius:12px;background:#25D366;color:#fff;font-size:15px;font-weight:700;cursor:pointer;display:none;align-items:center;justify-content:center;gap:6px;box-shadow:0 4px 20px rgba(37,211,102,.3)}
 .sh-btn:active{transform:scale(.97)}
@@ -170,7 +169,7 @@ input,select,button{font-family:inherit}
 <body>
 <div id="app">
   <header class="hdr">
-    <div class="hdr-t">🏠 <span id="appTitle">Bollette di Casa</span> <span class="ver">v6</span></div>
+    <div class="hdr-t">🏠 <span id="appTitle">Bollette di Casa</span> <span class="ver">v7</span></div>
     <button class="gear" onclick="togSet()"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
   </header>
   <div class="caw" id="caw" onclick="togSet()"></div>
@@ -266,9 +265,8 @@ function go(s){
   document.querySelectorAll('.nb').forEach(b=>b.classList.remove('on'));
   document.querySelector(`.nb[data-s="${s}"]`).classList.add('on');
   if(s==='sto')rHist();if(s==='rep')rRep();
-  $('sf').classList.toggle('vis',s==='reg');
-  $('sf').classList.remove('shared');
-  if(s==='reg')chk();
+  if(s!=='reg')$('sf').classList.remove('pop','shared');
+  else chk();
 }
 document.querySelectorAll('.nb').forEach(b=>b.addEventListener('click',()=>go(b.dataset.s)));
 
@@ -280,7 +278,7 @@ function stAb(d){ab=Math.max(1,Math.min(20,ab+d));$('abV').textContent=ab;localS
 // DIRTY CHECK
 function chk(){
   const d=$('iL').value||$('iA').value||$('iG').value;
-  $('sf').classList.toggle('dirty',!!d);
+  $('sf').classList.toggle('pop',!!d);
   $('sf').classList.remove('shared');
 }
 
@@ -307,7 +305,7 @@ function pVoice(raw){
 // SAVE
 let lastSaved=null;
 async function save(){
-  if(!$('sf').classList.contains('dirty'))return;
+  if(!$('sf').classList.contains('pop'))return;
   const luce=parseFloat($('iL').value)||0,acqua=parseFloat($('iA').value)||0,gas=parseFloat($('iG').value)||0;
   if(!luce&&!acqua&&!gas){toast(t('fill1'),'error');return}
   const td=new Date().toISOString().slice(0,10);
@@ -322,7 +320,7 @@ async function save(){
     chk();
     // Show share button
     $('sf').classList.add('shared');
-    $('sf').classList.add('vis');
+    $('sf').classList.add('pop');
     await rHist();await rRep();
   }catch(e){console.error(e);toast('Errore: '+e.message,'error')}
 }
@@ -524,7 +522,41 @@ function toast(m,tp){const e=$('toast');e.textContent=m;e.className='toast'+(tp?
 apL();
 const td=new Date().toISOString().slice(0,10);
 $('iLD').value=td;$('iAD').value=td;$('iGD').value=td;
-$('sf').classList.add('vis');
+
+// Migrate data from old DBs
+(async function migrate(){
+  const oldNames=['ContasCasaDB','BolletteCasaDB','BolletteCasaV2'];
+  for(const name of oldNames){
+    try{
+      const old=new Dexie(name);
+      const exists=await Dexie.exists(name);
+      if(!exists)continue;
+      old.version(1).stores({records:'++id'});
+      await old.open();
+      const recs=await old.records.toArray();
+      if(recs.length){
+        for(const r of recs){
+          // Check if already migrated (by createdAt)
+          const dup=await db.records.where('createdAt').equals(r.createdAt||'').first();
+          if(!dup){
+            await db.records.add({
+              luce:r.luce||0,luceDate:r.luceDate||r.month||'',
+              acqua:r.acqua||0,acquaDate:r.acquaDate||r.month||'',
+              gas:r.gas||0,gasDate:r.gasDate||r.month||'',
+              abitanti:r.abitanti||r.moradores||4,
+              createdAt:r.createdAt||new Date().toISOString()
+            });
+          }
+        }
+        console.log('Migrated '+recs.length+' from '+name);
+      }
+      old.close();
+      await Dexie.delete(name);
+    }catch(e){console.log('Skip '+name,e)}
+  }
+  // Refresh after migration
+  rHist();rRep();
+})()
 </script>
 </body>
 </html>
