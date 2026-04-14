@@ -95,7 +95,7 @@
 <body>
 <div id="app">
   <header class="hdr">
-    <div class="hdr-t">🏠 <span id="appTitle">Bollette di Casa</span><span class="ver">v8</span></div>
+    <div class="hdr-t">🏠 <span id="appTitle">Bollette di Casa</span><span class="ver">v9</span></div>
     <button class="gear" onclick="togSet()"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
   </header>
   <div class="caw" id="caw" onclick="togSet()"></div>
@@ -152,13 +152,13 @@ if(navigator.storage&&navigator.storage.persist)navigator.storage.persist();
 
 // ====== i18n ======
 const T={
-it:{luce:'Luce',acqua:'Acqua',iDate:'Data fattura',ab:'Abitanti',tap:'Tocca per registrare',rec:'Registrando...',hint:'"Luce 85, acqua 42, gas 63"',noMic:'Microfono non disponibile.',und:'Capito:',save:'Salva',nReg:'Registra',nSto:'Storico',nRep:'Report',cpp:'Costo per persona',noD:'Registra bollette per il report',cDel:'Eliminare?',cancel:'Annulla',del:'Elimina',edit:'Modifica',eRec:'Modifica',eOk:'Aggiornato!',sOk:'Salvato!',dOk:'Eliminato!',bOk:'Backup OK!',iOk:'Importato!',iFail:'Errore.',noH:'Nessun registro',fill1:'Compila almeno un valore',lng:'Lingua',title:'Bollette di Casa',xpdf:'Esporta PDF',xbk:'Esporta Backup',ibk:'Importa Backup',share:'Condividi',all:'Tutti',
+it:{luce:'Luce',acqua:'Acqua',iDate:'Data fattura',ab:'Abitanti',tap:'Tocca per registrare',rec:'Registrando...',hint:'"Luce 85, acqua 42, gas 63"',noMic:'Microfono non disponibile.',und:'Capito:',save:'Salva',nReg:'Registra',nSto:'Storico',nRep:'Report',cpp:'Costo per persona',noD:'Registra bollette per il report',cDel:'Eliminare?',cancel:'Annulla',del:'Elimina',edit:'Modifica',eRec:'Modifica',eOk:'Aggiornato!',sOk:'Salvato!',dOk:'Eliminato!',bOk:'Backup OK!',iOk:'Importato!',iFail:'Errore.',noH:'Nessun registro',fill1:'Compila almeno un valore',alreadyExists:'gia registrata! Modifica dallo Storico.',lng:'Lingua',title:'Bollette di Casa',xpdf:'Esporta PDF',xbk:'Esporta Backup',ibk:'Importa Backup',share:'Condividi',all:'Tutti',
 tBar:'€ / Mese',tDay:'€ / Giorno',tLine:'Andamento',tPie:'Distribuzione',tPerson:'Per Persona',
 sl:'it-IT',mn:['Gen','Feb','Mar','Apr','Mag','Giu','Lug','Ago','Set','Ott','Nov','Dic'],mf:['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno','Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre']},
-es:{luce:'Luz',acqua:'Agua',iDate:'Fecha factura',ab:'Habitantes',tap:'Toca para grabar',rec:'Grabando...',hint:'"Luz 85, agua 42, gas 63"',noMic:'Micro no disponible.',und:'Entendido:',save:'Guardar',nReg:'Registrar',nSto:'Historial',nRep:'Informe',cpp:'Coste por persona',noD:'Registra facturas',cDel:'Eliminar?',cancel:'Cancelar',del:'Eliminar',edit:'Editar',eRec:'Editar',eOk:'Actualizado!',sOk:'Guardado!',dOk:'Eliminado!',bOk:'Backup OK!',iOk:'Importado!',iFail:'Error.',noH:'Sin registros',fill1:'Rellena al menos uno',lng:'Idioma',title:'Facturas de Casa',xpdf:'Exportar PDF',xbk:'Exportar Backup',ibk:'Importar Backup',share:'Compartir',all:'Todos',
+es:{luce:'Luz',acqua:'Agua',iDate:'Fecha factura',ab:'Habitantes',tap:'Toca para grabar',rec:'Grabando...',hint:'"Luz 85, agua 42, gas 63"',noMic:'Micro no disponible.',und:'Entendido:',save:'Guardar',nReg:'Registrar',nSto:'Historial',nRep:'Informe',cpp:'Coste por persona',noD:'Registra facturas',cDel:'Eliminar?',cancel:'Cancelar',del:'Eliminar',edit:'Editar',eRec:'Editar',eOk:'Actualizado!',sOk:'Guardado!',dOk:'Eliminado!',bOk:'Backup OK!',iOk:'Importado!',iFail:'Error.',noH:'Sin registros',fill1:'Rellena al menos uno',alreadyExists:'ya registrada! Edita desde Historial.',lng:'Idioma',title:'Facturas de Casa',xpdf:'Exportar PDF',xbk:'Exportar Backup',ibk:'Importar Backup',share:'Compartir',all:'Todos',
 tBar:'€ / Mes',tDay:'€ / Dia',tLine:'Evolucion',tPie:'Distribucion',tPerson:'Por Persona',
 sl:'es-ES',mn:['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'],mf:['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre']},
-pt:{luce:'Luz',acqua:'Agua',iDate:'Data fatura',ab:'Moradores',tap:'Toque para gravar',rec:'Gravando...',hint:'"Luz 85, agua 42, gas 63"',noMic:'Micro indisponivel.',und:'Entendi:',save:'Salvar',nReg:'Registrar',nSto:'Historico',nRep:'Relatorio',cpp:'Custo por pessoa',noD:'Registre contas',cDel:'Apagar?',cancel:'Cancelar',del:'Apagar',edit:'Editar',eRec:'Editar',eOk:'Atualizado!',sOk:'Salvo!',dOk:'Apagado!',bOk:'Backup OK!',iOk:'Importado!',iFail:'Erro.',noH:'Sem registros',fill1:'Preencha pelo menos um',lng:'Idioma',title:'Contas da Casa',xpdf:'Exportar PDF',xbk:'Exportar Backup',ibk:'Importar Backup',share:'Compartilhar',all:'Todos',
+pt:{luce:'Luz',acqua:'Agua',iDate:'Data fatura',ab:'Moradores',tap:'Toque para gravar',rec:'Gravando...',hint:'"Luz 85, agua 42, gas 63"',noMic:'Micro indisponivel.',und:'Entendi:',save:'Salvar',nReg:'Registrar',nSto:'Historico',nRep:'Relatorio',cpp:'Custo por pessoa',noD:'Registre contas',cDel:'Apagar?',cancel:'Cancelar',del:'Apagar',edit:'Editar',eRec:'Editar',eOk:'Atualizado!',sOk:'Salvo!',dOk:'Apagado!',bOk:'Backup OK!',iOk:'Importado!',iFail:'Erro.',noH:'Sem registros',fill1:'Preencha pelo menos um',alreadyExists:'ja registrada! Edite pelo Historico.',lng:'Idioma',title:'Contas da Casa',xpdf:'Exportar PDF',xbk:'Exportar Backup',ibk:'Importar Backup',share:'Compartilhar',all:'Todos',
 tBar:'€ / Mes',tDay:'€ / Dia',tLine:'Evolucao',tPie:'Distribuicao',tPerson:'Por Pessoa',
 sl:'pt-PT',mn:['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'],mf:['Janeiro','Fevereiro','Marco','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro']}
 };
@@ -200,6 +200,13 @@ async function save(){
     for(const[mo,utils]of Object.entries(byMo)){
       const existing=await db.records.where('month').equals(mo).first();
       if(existing){
+        // Block if utility already has a value for this month
+        const dupes=[];
+        if(utils.luce&&existing.luce)dupes.push(t('luce'));
+        if(utils.acqua&&existing.acqua)dupes.push(t('acqua'));
+        if(utils.gas&&existing.gas)dupes.push('Gas');
+        if(dupes.length){toast(dupes.join(', ')+' — '+fMo(mo)+' '+t('alreadyExists'),'error');return}
+        // Only add new utilities
         const upd={updatedAt:new Date().toISOString()};
         if(utils.luce){upd.luce=utils.luce.v;upd.luceDate=utils.luce.d}
         if(utils.acqua){upd.acqua=utils.acqua.v;upd.acquaDate=utils.acqua.d}
