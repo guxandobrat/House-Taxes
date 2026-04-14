@@ -59,8 +59,8 @@
 .au{font-size:11px;color:#b45309;background:var(--luce-bg);padding:8px 12px;border-radius:var(--rs);text-align:center;margin-bottom:10px;display:none}
 .trsc{background:var(--luce-bg);border:1px solid #fde68a;border-radius:var(--rs);padding:10px;margin-bottom:10px;font-size:12px;color:#92400e;display:none}.trsc.show{display:block}.trsc b{font-size:10px;display:block;margin-bottom:3px;text-transform:uppercase;letter-spacing:.4px}
 /* SAVE */
-.sf{position:fixed;bottom:calc(var(--navh)+12px);left:50%;max-width:440px;width:calc(100% - 32px);transform:translateX(-50%) translateY(100px);opacity:0;pointer-events:none;z-index:90;transition:all .35s cubic-bezier(.4,0,.2,1);display:flex;gap:8px}
-.sf.pop{transform:translateX(-50%) translateY(0);opacity:1;pointer-events:auto}
+.sf{position:fixed;bottom:calc(var(--navh)+12px);left:0;right:0;margin:0 auto;max-width:440px;width:calc(100% - 32px);transform:translateY(120px);opacity:0;pointer-events:none;z-index:999;transition:all .35s cubic-bezier(.4,0,.2,1);display:flex;gap:8px}
+.sf.pop{transform:translateY(0);opacity:1;pointer-events:auto}
 .sv-btn{flex:1;padding:14px;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;background:linear-gradient(135deg,var(--ok),#059669);color:#fff;box-shadow:0 6px 24px rgba(16,185,129,.35);transition:all .2s}.sv-btn:active{transform:scale(.97)}.sv-btn svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2.5}
 .sh-btn{padding:14px 16px;border:none;border-radius:12px;background:#25D366;color:#fff;font-size:15px;font-weight:700;cursor:pointer;display:none;align-items:center;justify-content:center;gap:6px;box-shadow:0 4px 20px rgba(37,211,102,.3)}.sh-btn:active{transform:scale(.97)}.sf.shared .sh-btn{display:flex}.sf.shared .sv-btn{display:none}
 /* STORICO */
@@ -133,7 +133,6 @@
       <button class="rb rb-pdf" onclick="expPDF()"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span data-i18n="xpdf">Esporta PDF</span></button>
     </div>
   </div>
-  <div class="sf" id="sf"><button class="sv-btn" onclick="save()"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg><span data-i18n="save">Salva</span></button><button class="sh-btn" id="shBtn" onclick="doShare()">📤 WhatsApp</button></div>
   <div class="toast" id="toast"></div>
   <div class="mbg" id="mDel"><div class="mdl"><h3 data-i18n="cDel">Eliminare?</h3><p id="mDelT"></p><div class="mbtn"><button class="cn" onclick="cDel()" data-i18n="cancel">Annulla</button><button class="dg" onclick="dDel()" data-i18n="del">Elimina</button></div></div></div>
   <div class="mbg" id="mEdit"><div class="mdl"><h3 data-i18n="eRec">Modifica</h3><div style="display:flex;flex-direction:column;gap:8px"><div style="display:flex;gap:6px;align-items:center"><span>⚡</span><input type="number" step="0.01" id="eL" class="fed" inputmode="decimal"><input type="date" id="eLD" class="fed"></div><div style="display:flex;gap:6px;align-items:center"><span>💧</span><input type="number" step="0.01" id="eA" class="fed" inputmode="decimal"><input type="date" id="eAD" class="fed"></div><div style="display:flex;gap:6px;align-items:center"><span>🔥</span><input type="number" step="0.01" id="eG" class="fed" inputmode="decimal"><input type="date" id="eGD" class="fed"></div></div><div class="mbtn" style="margin-top:14px"><button class="cn" onclick="cEdit()" data-i18n="cancel">Annulla</button><button class="dg" style="background:var(--pri)" onclick="dEdit()" data-i18n="save">Salva</button></div></div></div>
@@ -143,6 +142,7 @@
     <button class="nb" data-s="rep"><svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg><span data-i18n="nRep">Report</span></button>
   </nav>
 </div>
+<div class="sf" id="sf"><button class="sv-btn" onclick="save()"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg><span data-i18n="save">Salva</span></button><button class="sh-btn" id="shBtn" onclick="doShare()">📤 WhatsApp</button></div>
 <script>
 const $=id=>document.getElementById(id);
 
@@ -371,7 +371,17 @@ function drawCh(recs){
 function bOpt(dl){return{responsive:true,maintainAspectRatio:true,plugins:{legend:{position:'bottom',labels:{boxWidth:10,font:{size:10}}},datalabels:dl},scales:{y:{beginAtZero:true,grid:{color:'#f1f5f9'},ticks:{font:{size:9}}},x:{grid:{display:false},ticks:{font:{size:9}}}}}}
 
 // ====== EXPORT ======
-function expPDF(){html2pdf().set({margin:6,filename:'bollette.pdf',image:{type:'jpeg',quality:.95},html2canvas:{scale:2},jsPDF:{unit:'mm',format:'a4',orientation:'portrait'}}).from($('repC')).save()}
+function expPDF(){
+  const el=$('repC');
+  html2pdf().set({
+    margin:[10,8,10,8],
+    filename:'bollette-di-casa.pdf',
+    image:{type:'png',quality:1},
+    html2canvas:{scale:3,useCORS:true,logging:false,backgroundColor:'#f1f5f9'},
+    jsPDF:{unit:'mm',format:'a4',orientation:'portrait'},
+    pagebreak:{mode:['avoid-all','css','legacy']}
+  }).from(el).save();
+}
 
 // ====== UTILS ======
 function fDs(d){if(!d)return'';const p=d.split('-');return parseInt(p[2])+' '+T[lang].mn[parseInt(p[1])-1]}
