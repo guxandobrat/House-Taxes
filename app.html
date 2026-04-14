@@ -196,7 +196,7 @@ input,select,button{font-family:inherit}
 <div id="app">
 
   <header class="header">
-    <div class="header-title"><span>🏠</span> <span id="appTitle">Bollette di Casa</span></div>
+    <div class="header-title"><span>🏠</span> <span id="appTitle">Bollette di Casa</span> <span style="font-size:9px;color:#94a3b8;font-weight:400">v4</span></div>
     <button class="gear-btn" onclick="toggleSettings()" aria-label="Settings">
       <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
     </button>
@@ -432,13 +432,19 @@ async function saveRecord(){
       gas,gasDate:document.getElementById('inGasDate').value||today,
       abitanti,createdAt:new Date().toISOString()
     });
-    toast(t('savedOk'),'success');
+    // Clear form
     ['inLuce','inAcqua','inGas'].forEach(id=>document.getElementById(id).value='');
     document.getElementById('transcript').classList.remove('show');
     checkDirty();
-    // Force refresh history and report so data is ready when user navigates
-    refreshHistory();
-    refreshReport();
+    // Reset dates to today
+    document.getElementById('inLuceDate').value=today;
+    document.getElementById('inAcquaDate').value=today;
+    document.getElementById('inGasDate').value=today;
+    // Show success and navigate to storico so user sees the saved data
+    toast(t('savedOk'),'success');
+    await refreshHistory();
+    await refreshReport();
+    setTimeout(()=>goTo('storico'),400);
   }catch(e){
     console.error('Save failed:',e);
     toast('Errore: '+e.message,'error');
