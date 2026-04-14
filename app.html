@@ -1,979 +1,506 @@
 <!DOCTYPE html>
-<html lang="pt">
+<html lang="it">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Contas da Casa</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#6366f1">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Bollette di Casa</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏠</text></svg>">
 <script src="https://cdn.jsdelivr.net/npm/dexie@3/dist/dexie.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
 <script src="https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js"></script>
 <style>
-/* ===== RESET & BASE ===== */
+:root {
+  --primary:#6366f1;--primary-light:#a5b4fc;--primary-dark:#4f46e5;
+  --primary-glow:rgba(99,102,241,.25);
+  --luce:#f59e0b;--luce-bg:#fffbeb;--luce-border:#fde68a;
+  --acqua:#06b6d4;--acqua-bg:#ecfeff;--acqua-border:#a5f3fc;
+  --gas:#f43f5e;--gas-bg:#fff1f2;--gas-border:#fecdd3;
+  --bg:#f1f5f9;--card:#ffffff;--text:#1e293b;--text2:#64748b;--text3:#94a3b8;
+  --border:#e2e8f0;--success:#10b981;--danger:#ef4444;
+  --radius:16px;--radius-sm:10px;
+  --shadow:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04);
+  --shadow-md:0 4px 12px rgba(0,0,0,.07);--shadow-lg:0 8px 30px rgba(0,0,0,.1);
+  --nav-h:68px;--header-h:60px;
+}
 *{margin:0;padding:0;box-sizing:border-box}
 html{font-size:16px;-webkit-tap-highlight-color:transparent}
-body{
-  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
-  background:#f5f5f5;
-  color:#333;
-  min-height:100vh;
-  min-height:100dvh;
-  overflow:hidden;
-}
+body{font-family:'SF Pro Display',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;min-height:100dvh;overflow:hidden}
+input,select,button{font-family:inherit}
 
-/* ===== APP SHELL ===== */
-#app{
-  max-width:480px;
-  margin:0 auto;
-  height:100vh;
-  height:100dvh;
-  display:flex;
-  flex-direction:column;
-  background:#fff;
-  position:relative;
-}
+#app{max-width:480px;margin:0 auto;height:100vh;height:100dvh;display:flex;flex-direction:column;position:relative;background:var(--bg);overflow:hidden}
 
-/* ===== HEADER ===== */
-.app-header{
-  padding:16px 20px 12px;
-  background:#fff;
-  border-bottom:1px solid #eee;
-  flex-shrink:0;
-}
-.app-header h1{font-size:18px;color:#1a1a1a}
-.app-header small{font-size:12px;color:#999}
+/* HEADER */
+.header{height:var(--header-h);padding:0 20px;display:flex;align-items:center;justify-content:space-between;background:var(--card);border-bottom:1px solid var(--border);flex-shrink:0;z-index:50}
+.header-title{font-size:18px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:8px}
+.header-title span{font-size:22px}
+.gear-btn{width:38px;height:38px;border-radius:50%;border:none;background:var(--bg);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;position:relative}
+.gear-btn:active{transform:scale(.9)}
+.gear-btn svg{width:20px;height:20px;stroke:var(--text2);fill:none;stroke-width:2;transition:transform .4s}
+.gear-btn:hover svg{transform:rotate(90deg)}
 
-/* ===== SCREENS ===== */
-.screen{
-  display:none;
-  flex-direction:column;
-  flex:1;
-  overflow-y:auto;
-  padding:16px 20px 100px;
-  -webkit-overflow-scrolling:touch;
-}
-.screen.active{display:flex}
+/* SETTINGS */
+.settings-panel{position:absolute;top:var(--header-h);right:12px;background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow-lg);padding:16px;z-index:200;min-width:200px;opacity:0;transform:translateY(-8px) scale(.95);pointer-events:none;transition:all .25s cubic-bezier(.4,0,.2,1)}
+.settings-panel.open{opacity:1;transform:translateY(0) scale(1);pointer-events:auto}
+.settings-panel h4{font-size:12px;text-transform:uppercase;letter-spacing:1px;color:var(--text3);margin-bottom:10px}
+.lang-option{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:var(--radius-sm);cursor:pointer;transition:background .15s;margin-bottom:4px}
+.lang-option:hover{background:var(--bg)}
+.lang-option.active{background:#eef2ff;color:var(--primary)}
+.lang-option .flag{font-size:20px}
+.lang-option .lang-name{font-size:14px;font-weight:500}
+.lang-option .check{margin-left:auto;opacity:0;color:var(--primary);font-weight:700}
+.lang-option.active .check{opacity:1}
 
-/* ===== BOTTOM NAV ===== */
-.bottom-nav{
-  display:flex;
-  background:#fff;
-  border-top:1px solid #eee;
-  padding:6px 0 env(safe-area-inset-bottom,12px);
-  flex-shrink:0;
-  position:absolute;
-  bottom:0;left:0;right:0;
-  z-index:100;
-}
-.nav-btn{
-  flex:1;text-align:center;padding:8px 4px;
-  font-size:10px;color:#999;background:none;border:none;
-  cursor:pointer;transition:color .2s;
-  display:flex;flex-direction:column;align-items:center;gap:2px;
-}
-.nav-btn.active{color:#2563eb;font-weight:600}
-.nav-btn svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+/* SCREENS */
+.screen{display:none;flex-direction:column;flex:1;overflow-y:auto;padding:16px 20px calc(var(--nav-h) + 20px);-webkit-overflow-scrolling:touch}
+.screen.active{display:flex;animation:fadeIn .3s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 
-/* ===== CARDS ===== */
-.card{
-  background:#f8f9fa;border-radius:12px;padding:14px 16px;
-  margin-bottom:10px;
-}
-.card-row{display:flex;justify-content:space-between;align-items:center}
-.card-label{font-size:14px;color:#555}
-.card-value{font-size:18px;font-weight:700;color:#1a1a1a}
-.card-sub{font-size:11px;color:#999;margin-top:2px}
+/* NAV */
+.nav{display:flex;background:var(--card);border-top:1px solid var(--border);padding:8px 0 env(safe-area-inset-bottom,14px);flex-shrink:0;position:absolute;bottom:0;left:0;right:0;z-index:100;height:var(--nav-h)}
+.nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:4px;background:none;border:none;cursor:pointer;color:var(--text3);transition:color .2s;position:relative}
+.nav-btn svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;transition:transform .2s}
+.nav-btn span{font-size:10px;font-weight:600;letter-spacing:.3px}
+.nav-btn.active{color:var(--primary)}
+.nav-btn.active svg{transform:scale(1.1)}
+.nav-btn::after{content:'';position:absolute;top:-1px;left:50%;transform:translateX(-50%);width:0;height:2px;background:var(--primary);border-radius:0 0 2px 2px;transition:width .25s}
+.nav-btn.active::after{width:32px}
 
-.card-luz{border-left:4px solid #f59e0b}
-.card-agua{border-left:4px solid #3b82f6}
-.card-gas{border-left:4px solid #ef4444}
+/* UTILITY CARD */
+.u-card{background:var(--card);border-radius:var(--radius);padding:16px;margin-bottom:12px;box-shadow:var(--shadow);border-left:4px solid transparent;transition:all .25s;animation:cardIn .4s ease both}
+.u-card:active{transform:scale(.985)}
+.u-card:nth-child(1){animation-delay:.05s}
+.u-card:nth-child(2){animation-delay:.12s}
+.u-card:nth-child(3){animation-delay:.19s}
+@keyframes cardIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.u-card.luce{border-left-color:var(--luce)}
+.u-card.acqua{border-left-color:var(--acqua)}
+.u-card.gas{border-left-color:var(--gas)}
+.u-card-header{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.u-card-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px}
+.u-card.luce .u-card-icon{background:var(--luce-bg)}
+.u-card.acqua .u-card-icon{background:var(--acqua-bg)}
+.u-card.gas .u-card-icon{background:var(--gas-bg)}
+.u-card-name{font-size:15px;font-weight:600;color:var(--text)}
+.u-card-fields{display:flex;gap:10px}
+.u-field{flex:1;display:flex;flex-direction:column;gap:4px}
+.u-field label{font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.5px}
+.u-field input{width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:15px;background:var(--bg);outline:none;transition:all .2s;color:var(--text)}
+.u-field input:focus{border-color:var(--primary);background:var(--card);box-shadow:0 0 0 3px var(--primary-glow)}
+.u-field input[type="number"]{font-weight:600;font-size:17px}
+.u-field .eur{position:relative}
+.u-field .eur::after{content:'EUR';position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:11px;color:var(--text3);font-weight:600;pointer-events:none}
+.u-field .eur input{padding-right:42px}
 
-/* ===== BUTTONS ===== */
-.btn{
-  width:100%;padding:14px;border:none;border-radius:12px;
-  font-size:15px;font-weight:600;cursor:pointer;
-  transition:opacity .2s;display:flex;align-items:center;justify-content:center;gap:8px;
-}
-.btn:active{opacity:.8}
-.btn-primary{background:#2563eb;color:#fff}
-.btn-success{background:#16a34a;color:#fff}
-.btn-purple{background:#7c3aed;color:#fff}
-.btn-outline{background:transparent;border:1.5px solid #ddd;color:#666;font-size:13px}
-.btn-danger{background:#ef4444;color:#fff;font-size:13px;padding:10px}
-.btn-sm{padding:10px;font-size:13px}
+/* ABITANTI */
+.abitanti-row{display:flex;align-items:center;justify-content:space-between;background:var(--card);border-radius:var(--radius);padding:14px 16px;margin-bottom:12px;box-shadow:var(--shadow);animation:cardIn .4s ease both;animation-delay:.26s}
+.abitanti-label{font-size:14px;font-weight:600;color:var(--text)}
+.abitanti-stepper{display:flex;align-items:center;gap:12px}
+.stepper-btn{width:34px;height:34px;border-radius:50%;border:1.5px solid var(--border);background:var(--bg);font-size:18px;font-weight:600;color:var(--text2);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.stepper-btn:active{transform:scale(.9);background:var(--primary-light);color:#fff;border-color:var(--primary)}
+.abitanti-value{font-size:20px;font-weight:700;color:var(--text);min-width:24px;text-align:center}
 
-/* ===== FORM ===== */
-.form-group{margin-bottom:14px}
-.form-group label{
-  display:block;font-size:12px;font-weight:600;color:#666;
-  text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;
-}
-.form-input{
-  width:100%;padding:12px 14px;border:1.5px solid #ddd;
-  border-radius:10px;font-size:15px;background:#fafafa;
-  outline:none;transition:border .2s;
-}
-.form-input:focus{border-color:#2563eb;background:#fff}
-select.form-input{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M2 4l4 4 4-4' fill='none' stroke='%23999' stroke-width='1.5'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center}
+/* MIC */
+.mic-section{display:flex;flex-direction:column;align-items:center;padding:16px 0;margin-bottom:12px;animation:cardIn .4s ease both;animation-delay:.33s}
+.mic-btn{width:64px;height:64px;border-radius:50%;border:none;background:linear-gradient(135deg,var(--primary),var(--primary-dark));box-shadow:0 4px 20px var(--primary-glow);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .25s;position:relative}
+.mic-btn svg{width:26px;height:26px;stroke:#fff;fill:none;stroke-width:2}
+.mic-btn:active{transform:scale(.92)}
+.mic-btn.recording{background:linear-gradient(135deg,var(--danger),#dc2626);box-shadow:0 4px 20px rgba(239,68,68,.35);animation:micPulse 1.2s infinite}
+@keyframes micPulse{0%,100%{box-shadow:0 4px 20px rgba(239,68,68,.35)}50%{box-shadow:0 4px 40px rgba(239,68,68,.55)}}
+.mic-label{font-size:12px;color:var(--text3);margin-top:8px;font-weight:500}
+.mic-hint{font-size:11px;color:var(--text3);margin-top:2px;font-style:italic;opacity:.7}
+.audio-unsupported{font-size:12px;color:#b45309;background:var(--luce-bg);padding:10px 14px;border-radius:var(--radius-sm);text-align:center;margin-bottom:12px;display:none}
 
-/* ===== AUDIO AREA ===== */
-.audio-area{
-  display:flex;flex-direction:column;align-items:center;
-  padding:20px;background:#f0f7ff;border:2px dashed #93c5fd;
-  border-radius:14px;margin-bottom:14px;cursor:pointer;
-  transition:all .2s;user-select:none;
-}
-.audio-area:active{transform:scale(.98)}
-.audio-area.recording{background:#fef2f2;border-color:#fca5a5}
-.audio-area.recording .mic-circle{background:#ef4444;animation:pulse 1s infinite}
-.mic-circle{
-  width:56px;height:56px;border-radius:50%;
-  background:#2563eb;display:flex;align-items:center;justify-content:center;
-  margin-bottom:8px;transition:background .2s;
-}
-.mic-circle svg{width:24px;height:24px;stroke:#fff;fill:none;stroke-width:2}
-.audio-area p{font-size:13px;color:#555;margin-top:4px}
-.audio-area small{font-size:11px;color:#999}
-.audio-unsupported{display:none;color:#d97706;font-size:12px;background:#fef3c7;padding:8px 12px;border-radius:8px;margin-bottom:14px;text-align:center}
+/* TRANSCRIPT */
+.transcript{background:var(--luce-bg);border:1px solid var(--luce-border);border-radius:var(--radius-sm);padding:12px;margin-bottom:12px;font-size:13px;color:#92400e;display:none;animation:fadeIn .3s ease}
+.transcript.show{display:block}
+.transcript-label{font-weight:700;font-size:11px;margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px}
 
-@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+/* FLOATING SAVE */
+.save-float{position:fixed;bottom:calc(var(--nav-h) + 16px);left:50%;max-width:440px;width:calc(100% - 40px);transform:translateX(-50%) translateY(100px);opacity:0;pointer-events:none;transition:all .35s cubic-bezier(.4,0,.2,1);z-index:90}
+.save-float.visible{transform:translateX(-50%) translateY(0);opacity:1;pointer-events:auto}
+.save-btn{width:100%;padding:16px;border:none;border-radius:14px;background:linear-gradient(135deg,var(--success),#059669);color:#fff;font-size:16px;font-weight:700;cursor:pointer;box-shadow:0 6px 24px rgba(16,185,129,.35);display:flex;align-items:center;justify-content:center;gap:8px;transition:all .2s;letter-spacing:.3px}
+.save-btn:active{transform:scale(.97)}
+.save-btn svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2.5}
 
-/* ===== TRANSCRIPT ===== */
-.transcript-box{
-  background:#fffbeb;border:1px solid #fde68a;border-radius:10px;
-  padding:12px;margin-bottom:14px;font-size:13px;color:#92400e;
-  display:none;
-}
-.transcript-box.show{display:block}
-.transcript-label{font-weight:600;font-size:11px;color:#b45309;margin-bottom:4px}
+/* HISTORY */
+.h-item{background:var(--card);border-radius:var(--radius);padding:16px;margin-bottom:10px;box-shadow:var(--shadow);display:flex;justify-content:space-between;align-items:center;cursor:pointer;transition:all .2s;animation:cardIn .3s ease both}
+.h-item:active{transform:scale(.98);background:#fafafa}
+.h-date{font-size:14px;font-weight:700;color:var(--text)}
+.h-detail{font-size:11px;color:var(--text3);margin-top:3px;line-height:1.4}
+.h-total{font-size:17px;font-weight:800;color:var(--text);text-align:right}
 
-/* ===== VALUES GRID ===== */
-.values-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px}
-.value-box{
-  text-align:center;padding:10px 6px;background:#f8f9fa;
-  border-radius:10px;border:1.5px solid #eee;
-}
-.value-box .icon{font-size:22px;display:block;margin-bottom:4px}
-.value-box input{
-  width:100%;text-align:center;border:none;background:transparent;
-  font-size:18px;font-weight:700;color:#333;outline:none;padding:4px 0;
-}
-.value-box small{font-size:11px;color:#888}
+/* EMPTY */
+.empty{text-align:center;padding:48px 20px;color:var(--text3)}
+.empty-icon{font-size:48px;margin-bottom:12px;opacity:.5}
+.empty p{font-size:14px;line-height:1.5}
 
-/* ===== HISTORY LIST ===== */
-.history-item{
-  display:flex;justify-content:space-between;align-items:center;
-  padding:14px 16px;background:#f8f9fa;border-radius:10px;
-  margin-bottom:8px;cursor:pointer;transition:background .2s;
-}
-.history-item:active{background:#eef2ff}
-.history-date{font-size:14px;font-weight:600;color:#333}
-.history-detail{font-size:11px;color:#888;margin-top:2px}
-.history-total{font-size:15px;font-weight:700;color:#333;text-align:right}
-.badge{font-size:10px;padding:2px 8px;border-radius:20px;font-weight:600;display:inline-block;margin-top:4px}
-.badge-pago{background:#dcfce7;color:#16a34a}
-.badge-pendente{background:#fef3c7;color:#d97706}
+/* REPORT */
+.r-summary{background:linear-gradient(135deg,var(--primary),#4338ca);border-radius:var(--radius);padding:20px;margin-bottom:14px;color:#fff;text-align:center;box-shadow:var(--shadow-md)}
+.r-summary .big{font-size:28px;font-weight:800;margin:4px 0}
+.r-summary .sub{font-size:12px;opacity:.8}
+.r-row{display:flex;gap:8px;margin-bottom:14px}
+.r-stat{flex:1;background:var(--card);border-radius:var(--radius-sm);padding:14px 10px;text-align:center;box-shadow:var(--shadow)}
+.r-stat .label{font-size:10px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.5px}
+.r-stat .val{font-size:18px;font-weight:800;margin-top:4px}
+.r-stat.luce .val{color:var(--luce)}
+.r-stat.acqua .val{color:var(--acqua)}
+.r-stat.gas .val{color:var(--gas)}
+.chart-card{background:var(--card);border-radius:var(--radius);padding:16px;margin-bottom:14px;box-shadow:var(--shadow)}
+.chart-title{font-size:13px;font-weight:700;color:var(--text2);margin-bottom:12px}
+.chart-card canvas{max-height:220px}
+.r-btn{width:100%;padding:14px;border-radius:12px;font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .2s;margin-bottom:8px;border:none}
+.r-btn:active{transform:scale(.97)}
+.r-btn svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2}
+.r-btn-pdf{background:var(--primary);color:#fff;box-shadow:0 4px 16px var(--primary-glow)}
+.r-btn-backup{background:var(--bg);color:var(--text2);border:1.5px solid var(--border)!important}
+.r-btn-import{background:var(--bg);color:var(--text2);border:1.5px solid var(--border)!important}
 
-/* ===== REPORT ===== */
-.report-section{margin-bottom:16px}
-.report-title{font-size:13px;font-weight:600;color:#555;margin-bottom:10px}
-.per-person-box{
-  text-align:center;padding:14px;background:#f0f7ff;border-radius:12px;margin-bottom:12px;
-}
-.per-person-box .value{font-size:24px;font-weight:700;color:#2563eb}
-.per-person-box .label{font-size:12px;color:#888;margin-top:2px}
-.totals-row{display:flex;justify-content:space-between;padding:12px;background:#f8f9fa;border-radius:10px;margin-bottom:12px}
-.total-item{text-align:center;flex:1}
-.total-label{font-size:11px;color:#888}
-.total-value{font-size:16px;font-weight:700;color:#333}
-.chart-box{background:#fff;border:1px solid #eee;border-radius:12px;padding:12px;margin-bottom:12px}
-.chart-box canvas{max-height:200px}
+/* MODAL */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:300;display:none;align-items:flex-end;justify-content:center;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
+.modal-bg.show{display:flex;animation:fadeIn .2s ease}
+.modal{background:var(--card);border-radius:var(--radius) var(--radius) 0 0;padding:24px 20px env(safe-area-inset-bottom,24px);max-width:480px;width:100%;animation:slideUp .3s cubic-bezier(.4,0,.2,1)}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.modal h3{font-size:16px;font-weight:700;margin-bottom:8px}
+.modal p{font-size:14px;color:var(--text2);margin-bottom:16px}
+.modal-btns{display:flex;gap:8px}
+.modal-btns button{flex:1;padding:12px;border-radius:12px;font-size:14px;font-weight:600;cursor:pointer;border:none;transition:all .15s}
+.modal-btns .cancel{background:var(--bg);color:var(--text2)}
+.modal-btns .danger{background:var(--danger);color:#fff}
+.modal-btns button:active{transform:scale(.96)}
 
-/* ===== SETTINGS ROW ===== */
-.settings-row{
-  display:flex;gap:8px;margin-bottom:14px;
-}
-.settings-row .form-group{flex:1;margin-bottom:0}
-
-/* ===== WELCOME ===== */
-.welcome{text-align:center;padding:16px 0}
-.welcome h2{font-size:22px;color:#1a1a1a;margin-bottom:2px}
-.welcome p{color:#888;font-size:14px}
-
-/* ===== EMPTY STATE ===== */
-.empty-state{
-  text-align:center;padding:40px 20px;color:#999;
-}
-.empty-state svg{width:48px;height:48px;stroke:#ccc;fill:none;stroke-width:1.5;margin-bottom:12px}
-.empty-state p{font-size:14px}
-
-/* ===== TOAST ===== */
-.toast{
-  position:fixed;bottom:90px;left:50%;transform:translateX(-50%) translateY(10px);
-  background:#333;color:#fff;padding:12px 20px;border-radius:10px;
-  font-size:13px;opacity:0;transition:all .3s;pointer-events:none;z-index:200;
-  max-width:320px;text-align:center;
-}
+/* TOAST */
+.toast{position:fixed;top:calc(var(--header-h) + 12px);left:50%;transform:translateX(-50%) translateY(-20px);background:var(--text);color:#fff;padding:10px 20px;border-radius:40px;font-size:13px;font-weight:600;opacity:0;transition:all .3s cubic-bezier(.4,0,.2,1);pointer-events:none;z-index:500;white-space:nowrap;box-shadow:var(--shadow-lg)}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast.success{background:var(--success)}
+.toast.error{background:var(--danger)}
 
-/* ===== MODAL ===== */
-.modal-overlay{
-  position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);
-  z-index:300;display:none;align-items:flex-end;justify-content:center;
-}
-.modal-overlay.show{display:flex}
-.modal{
-  background:#fff;border-radius:16px 16px 0 0;padding:24px 20px;
-  max-width:480px;width:100%;max-height:70vh;overflow-y:auto;
-}
-.modal h3{font-size:16px;margin-bottom:12px;color:#333}
-.modal-actions{display:flex;gap:8px;margin-top:16px}
-.modal-actions .btn{flex:1}
+.click-away{position:fixed;inset:0;z-index:150;display:none}
+.click-away.show{display:block}
 
-/* ===== LANGUAGE SELECT ===== */
-.lang-bar{
-  display:flex;gap:6px;margin-bottom:14px;
-}
-.lang-btn{
-  flex:1;padding:8px;border:1.5px solid #ddd;border-radius:8px;
-  background:#fff;font-size:12px;font-weight:600;cursor:pointer;
-  text-align:center;transition:all .2s;color:#666;
-}
-.lang-btn.active{border-color:#2563eb;background:#eff6ff;color:#2563eb}
-
-/* ===== PRINT HIDE ===== */
-@media print{
-  .bottom-nav,.app-header,.btn,.audio-area,.nav-btn{display:none!important}
-  .screen{overflow:visible!important;padding-bottom:0!important}
-  #app{height:auto}
-}
+@media print{.nav,.header,.save-float,.mic-section,.audio-unsupported{display:none!important}.screen{overflow:visible!important;padding-bottom:0!important}#app{height:auto;overflow:visible}}
 </style>
 </head>
 <body>
-
 <div id="app">
-  <!-- HEADER -->
-  <div class="app-header">
-    <h1 id="headerTitle">Contas da Casa</h1>
-    <small id="headerSub"></small>
-  </div>
 
-  <!-- ============ SCREEN: HOME ============ -->
-  <div class="screen active" id="screen-home">
-    <div class="welcome">
-      <h2 id="welcomeMsg">Contas da Casa</h2>
-      <p id="welcomeSub">Nenhum registro ainda</p>
-    </div>
-
-    <div id="homeSummary"></div>
-
-    <button class="btn btn-primary" onclick="goTo('novo')" style="margin-top:12px">
-      <svg width="18" height="18" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-      <span data-i18n="newRecord">Novo Registro</span>
+  <header class="header">
+    <div class="header-title"><span>🏠</span> <span id="appTitle">Bollette di Casa</span></div>
+    <button class="gear-btn" onclick="toggleSettings()" aria-label="Settings">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
     </button>
+  </header>
 
-    <div style="margin-top:16px">
-      <div class="settings-row">
-        <div class="form-group">
-          <label data-i18n="language">Idioma</label>
-          <div class="lang-bar">
-            <button class="lang-btn active" data-lang="pt">PT</button>
-            <button class="lang-btn" data-lang="es">ES</button>
-            <button class="lang-btn" data-lang="it">IT</button>
-          </div>
-        </div>
-      </div>
+  <div class="click-away" id="clickAway" onclick="toggleSettings()"></div>
+  <div class="settings-panel" id="settingsPanel">
+    <h4 id="settingsTitle">Lingua</h4>
+    <div class="lang-option active" data-lang="it" onclick="setLang('it')">
+      <span class="flag">🇮🇹</span><span class="lang-name">Italiano</span><span class="check">&#10003;</span>
+    </div>
+    <div class="lang-option" data-lang="es" onclick="setLang('es')">
+      <span class="flag">🇪🇸</span><span class="lang-name">Castellano</span><span class="check">&#10003;</span>
+    </div>
+    <div class="lang-option" data-lang="pt" onclick="setLang('pt')">
+      <span class="flag">🇧🇷</span><span class="lang-name">Portugues</span><span class="check">&#10003;</span>
     </div>
   </div>
 
-  <!-- ============ SCREEN: NOVO REGISTRO ============ -->
-  <div class="screen" id="screen-novo">
-
-    <div class="audio-area" id="audioArea" onclick="toggleRecording()">
-      <div class="mic-circle">
-        <svg viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+  <!-- REGISTRA -->
+  <div class="screen active" id="screen-registra">
+    <div class="u-card luce">
+      <div class="u-card-header"><div class="u-card-icon">&#9889;</div><div class="u-card-name" data-i18n="luce">Luce</div></div>
+      <div class="u-card-fields">
+        <div class="u-field" style="flex:1.2"><label>EUR</label><div class="eur"><input type="number" step="0.01" id="inLuce" placeholder="0,00" inputmode="decimal" oninput="checkDirty()"></div></div>
+        <div class="u-field"><label data-i18n="invoiceDate">Data fattura</label><input type="date" id="inLuceDate" oninput="checkDirty()"></div>
       </div>
-      <p id="audioText" data-i18n="tapToRecord">Toque para gravar</p>
-      <small id="audioHint" data-i18n="audioHint">"Luz 85 euros, agua 42,50, gas 63,10"</small>
     </div>
-    <div class="audio-unsupported" id="audioUnsupported" data-i18n="audioUnsupported">
-      Reconhecimento de voz nao disponivel neste navegador. Use os campos abaixo.
+    <div class="u-card acqua">
+      <div class="u-card-header"><div class="u-card-icon">&#128167;</div><div class="u-card-name" data-i18n="acqua">Acqua</div></div>
+      <div class="u-card-fields">
+        <div class="u-field" style="flex:1.2"><label>EUR</label><div class="eur"><input type="number" step="0.01" id="inAcqua" placeholder="0,00" inputmode="decimal" oninput="checkDirty()"></div></div>
+        <div class="u-field"><label data-i18n="invoiceDate">Data fattura</label><input type="date" id="inAcquaDate" oninput="checkDirty()"></div>
+      </div>
     </div>
-
-    <div class="transcript-box" id="transcriptBox">
-      <div class="transcript-label" data-i18n="understood">Entendi:</div>
+    <div class="u-card gas">
+      <div class="u-card-header"><div class="u-card-icon">&#128293;</div><div class="u-card-name">Gas</div></div>
+      <div class="u-card-fields">
+        <div class="u-field" style="flex:1.2"><label>EUR</label><div class="eur"><input type="number" step="0.01" id="inGas" placeholder="0,00" inputmode="decimal" oninput="checkDirty()"></div></div>
+        <div class="u-field"><label data-i18n="invoiceDate">Data fattura</label><input type="date" id="inGasDate" oninput="checkDirty()"></div>
+      </div>
+    </div>
+    <div class="abitanti-row">
+      <span class="abitanti-label" data-i18n="abitanti">Abitanti</span>
+      <div class="abitanti-stepper">
+        <button class="stepper-btn" onclick="stepAb(-1)">&#8722;</button>
+        <span class="abitanti-value" id="abVal">4</span>
+        <button class="stepper-btn" onclick="stepAb(1)">+</button>
+      </div>
+    </div>
+    <div class="transcript" id="transcript">
+      <div class="transcript-label" data-i18n="understood">Capito:</div>
       <div id="transcriptText"></div>
     </div>
-
-    <div class="values-grid">
-      <div class="value-box">
-        <span class="icon" style="color:#f59e0b">&#9889;</span>
-        <input type="number" step="0.01" id="inputLuz" placeholder="0,00" inputmode="decimal">
-        <small data-i18n="electricity">Luz (EUR)</small>
-      </div>
-      <div class="value-box">
-        <span class="icon" style="color:#3b82f6">&#128167;</span>
-        <input type="number" step="0.01" id="inputAgua" placeholder="0,00" inputmode="decimal">
-        <small data-i18n="water">Agua (EUR)</small>
-      </div>
-      <div class="value-box">
-        <span class="icon" style="color:#ef4444">&#128293;</span>
-        <input type="number" step="0.01" id="inputGas" placeholder="0,00" inputmode="decimal">
-        <small data-i18n="gas">Gas (EUR)</small>
-      </div>
+    <div class="mic-section" id="micSection">
+      <button class="mic-btn" id="micBtn" onclick="toggleRec()">
+        <svg viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+      </button>
+      <div class="mic-label" id="micLabel" data-i18n="tapToRecord">Tocca per registrare</div>
+      <div class="mic-hint" data-i18n="audioHint">"Luce 85 euro, acqua 42,50, gas 63,10"</div>
     </div>
-
-    <div class="form-group">
-      <label data-i18n="invoiceMonth">Mes da fatura</label>
-      <input type="month" class="form-input" id="inputMonth">
-    </div>
-
-    <div class="settings-row">
-      <div class="form-group">
-        <label data-i18n="status">Status</label>
-        <select class="form-input" id="inputStatus">
-          <option value="pago" data-i18n-opt="paid">Pago</option>
-          <option value="pendente" data-i18n-opt="pending">Pendente</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label data-i18n="residents">Moradores</label>
-        <input type="number" class="form-input" id="inputMoradores" value="4" min="1" max="20">
-      </div>
-    </div>
-
-    <button class="btn btn-success" onclick="saveRecord()" id="btnSave">
-      <svg width="18" height="18" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-      <span data-i18n="save">Salvar Registro</span>
-    </button>
+    <div class="audio-unsupported" id="audioUnsup" data-i18n="audioUnsup">Riconoscimento vocale non disponibile. Usa i campi sopra.</div>
   </div>
 
-  <!-- ============ SCREEN: HISTORICO ============ -->
-  <div class="screen" id="screen-historico">
-    <div id="historyList"></div>
-  </div>
+  <!-- STORICO -->
+  <div class="screen" id="screen-storico"><div id="historyList"></div></div>
 
-  <!-- ============ SCREEN: RELATORIO ============ -->
-  <div class="screen" id="screen-relatorio">
-    <div id="reportContent">
-      <div class="empty-state" id="reportEmpty">
-        <svg viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-9-9"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-        <p data-i18n="noDataReport">Registre contas para ver o relatorio</p>
+  <!-- REPORT -->
+  <div class="screen" id="screen-report">
+    <div id="reportEmpty"><div class="empty"><div class="empty-icon">&#128202;</div><p data-i18n="noData">Registra le bollette per vedere il report</p></div></div>
+    <div id="reportContent" style="display:none">
+      <div class="r-summary">
+        <div class="sub" data-i18n="costPerPerson">Costo medio per persona / mese</div>
+        <div class="big" id="rPerPerson">--</div>
+        <div class="sub" id="rAbitanti"></div>
       </div>
-    </div>
-
-    <div id="reportCharts" style="display:none">
-      <div class="per-person-box" id="perPersonBox">
-        <div class="label" data-i18n="costPerPerson">Custo por pessoa (media mensal)</div>
-        <div class="value" id="perPersonValue">--</div>
+      <div class="r-row">
+        <div class="r-stat luce"><div class="label" data-i18n="luce">Luce</div><div class="val" id="rLuce">--</div></div>
+        <div class="r-stat acqua"><div class="label" data-i18n="acqua">Acqua</div><div class="val" id="rAcqua">--</div></div>
+        <div class="r-stat gas"><div class="label">Gas</div><div class="val" id="rGas">--</div></div>
       </div>
-
-      <div class="totals-row" id="totalsRow">
-        <div class="total-item"><div class="total-label" data-i18n="electricity2">Luz</div><div class="total-value" id="totalLuz" style="color:#f59e0b">--</div></div>
-        <div class="total-item"><div class="total-label" data-i18n="water2">Agua</div><div class="total-value" id="totalAgua" style="color:#3b82f6">--</div></div>
-        <div class="total-item"><div class="total-label" data-i18n="gas2">Gas</div><div class="total-value" id="totalGas" style="color:#ef4444">--</div></div>
-        <div class="total-item"><div class="total-label">Total</div><div class="total-value" id="totalGeral">--</div></div>
-      </div>
-
-      <div class="chart-box">
-        <div class="report-title" data-i18n="monthlyComparison">Comparativo Mensal (EUR)</div>
-        <canvas id="chartBar"></canvas>
-      </div>
-
-      <div class="chart-box">
-        <div class="report-title" data-i18n="monthlyTotal">Total Mensal (EUR)</div>
-        <canvas id="chartLine"></canvas>
-      </div>
-
-      <div class="chart-box">
-        <div class="report-title" data-i18n="distribution">Distribuicao por Tipo</div>
-        <canvas id="chartPie"></canvas>
-      </div>
-
-      <button class="btn btn-purple" onclick="exportPDF()" style="margin-top:8px">
-        <svg width="18" height="18" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-        <span data-i18n="exportPDF">Exportar PDF</span>
+      <div class="chart-card"><div class="chart-title" data-i18n="monthlyComp">Confronto per Periodo (EUR)</div><canvas id="chBar"></canvas></div>
+      <div class="chart-card"><div class="chart-title" data-i18n="totalLine">Totale nel Tempo (EUR)</div><canvas id="chLine"></canvas></div>
+      <div class="chart-card"><div class="chart-title" data-i18n="costPerDay">Costo Giornaliero (EUR/giorno)</div><canvas id="chDaily"></canvas></div>
+      <div class="chart-card"><div class="chart-title" data-i18n="distribution">Distribuzione</div><canvas id="chPie"></canvas></div>
+      <button class="r-btn r-btn-pdf" onclick="exportPDF()">
+        <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        <span data-i18n="exportPDF">Esporta PDF</span>
       </button>
-      <button class="btn btn-outline" onclick="exportBackup()" style="margin-top:8px">
-        <span data-i18n="exportBackup">Exportar Backup (JSON)</span>
+      <button class="r-btn r-btn-backup" onclick="exportBackup()">
+        <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        <span data-i18n="exportBackup">Esporta Backup</span>
       </button>
-      <button class="btn btn-outline" onclick="document.getElementById('importFile').click()" style="margin-top:8px">
-        <span data-i18n="importBackup">Importar Backup</span>
+      <button class="r-btn r-btn-import" onclick="document.getElementById('importFile').click()">
+        <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        <span data-i18n="importBackup">Importa Backup</span>
       </button>
       <input type="file" id="importFile" accept=".json" style="display:none" onchange="importBackup(event)">
     </div>
   </div>
 
-  <!-- TOAST -->
+  <div class="save-float" id="saveFloat">
+    <button class="save-btn" onclick="saveRecord()">
+      <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+      <span data-i18n="save">Salva</span>
+    </button>
+  </div>
+
   <div class="toast" id="toast"></div>
 
-  <!-- DELETE MODAL -->
-  <div class="modal-overlay" id="deleteModal">
+  <div class="modal-bg" id="delModal">
     <div class="modal">
-      <h3 data-i18n="confirmDelete">Apagar este registro?</h3>
-      <p id="deleteModalText" style="font-size:14px;color:#666"></p>
-      <div class="modal-actions">
-        <button class="btn btn-outline btn-sm" onclick="closeDeleteModal()"><span data-i18n="cancel">Cancelar</span></button>
-        <button class="btn btn-danger btn-sm" onclick="confirmDelete()"><span data-i18n="delete">Apagar</span></button>
+      <h3 data-i18n="confirmDel">Eliminare questo registro?</h3>
+      <p id="delModalText"></p>
+      <div class="modal-btns">
+        <button class="cancel" onclick="closeDel()" data-i18n="cancel">Annulla</button>
+        <button class="danger" onclick="doDel()" data-i18n="delete">Elimina</button>
       </div>
     </div>
   </div>
 
-  <!-- BOTTOM NAV -->
-  <nav class="bottom-nav">
-    <button class="nav-btn active" data-screen="home">
-      <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-      <span data-i18n="navHome">Inicio</span>
+  <nav class="nav">
+    <button class="nav-btn active" data-screen="registra">
+      <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      <span data-i18n="navReg">Registra</span>
     </button>
-    <button class="nav-btn" data-screen="novo">
-      <svg viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
-      <span data-i18n="navRegister">Registrar</span>
+    <button class="nav-btn" data-screen="storico">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      <span data-i18n="navHistory">Storico</span>
     </button>
-    <button class="nav-btn" data-screen="historico">
-      <svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
-      <span data-i18n="navHistory">Historico</span>
-    </button>
-    <button class="nav-btn" data-screen="relatorio">
+    <button class="nav-btn" data-screen="report">
       <svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
-      <span data-i18n="navReport">Relatorio</span>
+      <span data-i18n="navReport">Report</span>
     </button>
   </nav>
 </div>
 
 <script>
-// =============================================
-// DATABASE (Dexie.js + IndexedDB)
-// =============================================
-const db = new Dexie('ContasCasaDB');
-db.version(1).stores({
-  records: '++id, month, luz, agua, gas, status, moradores, createdAt'
-});
+const db=new Dexie('BolletteCasaDB');
+db.version(1).stores({records:'++id, luceDate, acquaDate, gasDate'});
+if(navigator.storage&&navigator.storage.persist) navigator.storage.persist();
 
-// Request persistent storage
-if (navigator.storage && navigator.storage.persist) {
-  navigator.storage.persist().then(granted => {
-    if (granted) console.log('Storage persistent');
-  });
-}
-
-// =============================================
-// i18n — TRANSLATIONS
-// =============================================
-const LANG = {
-  pt: {
-    newRecord:'Novo Registro', tapToRecord:'Toque para gravar', recording:'Gravando... toque para parar',
-    audioHint:'"Luz 85 euros, agua 42,50, gas 63,10"', audioUnsupported:'Reconhecimento de voz nao disponivel. Use os campos abaixo.',
-    understood:'Entendi:', electricity:'Luz (EUR)', water:'Agua (EUR)', gas:'Gas (EUR)',
-    invoiceMonth:'Mes da fatura', status:'Status', residents:'Moradores', save:'Salvar Registro',
-    paid:'Pago', pending:'Pendente', language:'Idioma',
-    navHome:'Inicio', navRegister:'Registrar', navHistory:'Historico', navReport:'Relatorio',
-    costPerPerson:'Custo por pessoa (media mensal)', monthlyComparison:'Comparativo Mensal (EUR)',
-    monthlyTotal:'Total Mensal (EUR)', distribution:'Distribuicao por Tipo',
-    exportPDF:'Exportar PDF', exportBackup:'Exportar Backup (JSON)', importBackup:'Importar Backup',
-    noDataReport:'Registre contas para ver o relatorio', confirmDelete:'Apagar este registro?',
-    cancel:'Cancelar', delete:'Apagar', electricity2:'Luz', water2:'Agua', gas2:'Gas',
-    savedOk:'Registro salvo!', deletedOk:'Registro apagado!', backupOk:'Backup exportado!',
-    importOk:'Backup importado!', importFail:'Erro ao importar backup.', noData:'Nenhum registro ainda',
-    lastRecord:'Ultimo registro', welcome:'Contas da Casa',
-    months:['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'],
-    speechLang:'pt-PT',
-  },
-  es: {
-    newRecord:'Nuevo Registro', tapToRecord:'Toca para grabar', recording:'Grabando... toca para parar',
-    audioHint:'"Luz 85 euros, agua 42,50, gas 63,10"', audioUnsupported:'Reconocimiento de voz no disponible. Use los campos abajo.',
-    understood:'Entendi:', electricity:'Luz (EUR)', water:'Agua (EUR)', gas:'Gas (EUR)',
-    invoiceMonth:'Mes de factura', status:'Estado', residents:'Habitantes', save:'Guardar Registro',
-    paid:'Pagado', pending:'Pendiente', language:'Idioma',
-    navHome:'Inicio', navRegister:'Registrar', navHistory:'Historial', navReport:'Informe',
-    costPerPerson:'Coste por persona (media mensual)', monthlyComparison:'Comparativo Mensual (EUR)',
-    monthlyTotal:'Total Mensual (EUR)', distribution:'Distribucion por Tipo',
-    exportPDF:'Exportar PDF', exportBackup:'Exportar Backup (JSON)', importBackup:'Importar Backup',
-    noDataReport:'Registre cuentas para ver el informe', confirmDelete:'Borrar este registro?',
-    cancel:'Cancelar', delete:'Borrar', electricity2:'Luz', water2:'Agua', gas2:'Gas',
-    savedOk:'Registro guardado!', deletedOk:'Registro borrado!', backupOk:'Backup exportado!',
-    importOk:'Backup importado!', importFail:'Error al importar backup.', noData:'Ningun registro aun',
-    lastRecord:'Ultimo registro', welcome:'Cuentas de Casa',
-    months:['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'],
-    speechLang:'es-ES',
-  },
-  it: {
-    newRecord:'Nuovo Registro', tapToRecord:'Tocca per registrare', recording:'Registrando... tocca per fermare',
-    audioHint:'"Luce 85 euro, acqua 42,50, gas 63,10"', audioUnsupported:'Riconoscimento vocale non disponibile. Usa i campi sotto.',
-    understood:'Capito:', electricity:'Luce (EUR)', water:'Acqua (EUR)', gas:'Gas (EUR)',
-    invoiceMonth:'Mese fattura', status:'Stato', residents:'Abitanti', save:'Salva Registro',
-    paid:'Pagato', pending:'In attesa', language:'Lingua',
-    navHome:'Inizio', navRegister:'Registra', navHistory:'Storico', navReport:'Report',
-    costPerPerson:'Costo per persona (media mensile)', monthlyComparison:'Confronto Mensile (EUR)',
-    monthlyTotal:'Totale Mensile (EUR)', distribution:'Distribuzione per Tipo',
-    exportPDF:'Esporta PDF', exportBackup:'Esporta Backup (JSON)', importBackup:'Importa Backup',
-    noDataReport:'Registra bollette per vedere il report', confirmDelete:'Eliminare questo registro?',
-    cancel:'Annulla', delete:'Elimina', electricity2:'Luce', water2:'Acqua', gas2:'Gas',
-    savedOk:'Registro salvato!', deletedOk:'Registro eliminato!', backupOk:'Backup esportato!',
-    importOk:'Backup importato!', importFail:'Errore importazione backup.', noData:'Nessun registro ancora',
-    lastRecord:'Ultimo registro', welcome:'Bollette di Casa',
-    months:['Gen','Feb','Mar','Apr','Mag','Giu','Lug','Ago','Set','Ott','Nov','Dic'],
-    speechLang:'it-IT',
-  }
+const I={
+  it:{luce:'Luce',acqua:'Acqua',invoiceDate:'Data fattura',abitanti:'Abitanti',tapToRecord:'Tocca per registrare',recording:'Registrando... tocca per fermare',audioHint:'"Luce 85 euro, acqua 42,50, gas 63,10"',audioUnsup:'Riconoscimento vocale non disponibile.',understood:'Capito:',save:'Salva',navReg:'Registra',navHistory:'Storico',navReport:'Report',costPerPerson:'Costo medio per persona / mese',monthlyComp:'Confronto per Periodo (EUR)',totalLine:'Totale nel Tempo (EUR)',costPerDay:'Costo Giornaliero (EUR/giorno)',distribution:'Distribuzione',exportPDF:'Esporta PDF',exportBackup:'Esporta Backup',importBackup:'Importa Backup',noData:'Registra le bollette per vedere il report',confirmDel:'Eliminare questo registro?',cancel:'Annulla',delete:'Elimina',savedOk:'Registro salvato!',deletedOk:'Registro eliminato!',backupOk:'Backup esportato!',importOk:'Backup importato!',importFail:'Errore importazione.',noHistory:'Nessun registro ancora',fillOne:'Compila almeno un valore',lingua:'Lingua',appTitle:'Bollette di Casa',speechLang:'it-IT',mn:['Gen','Feb','Mar','Apr','Mag','Giu','Lug','Ago','Set','Ott','Nov','Dic']},
+  es:{luce:'Luz',acqua:'Agua',invoiceDate:'Fecha factura',abitanti:'Habitantes',tapToRecord:'Toca para grabar',recording:'Grabando... toca para parar',audioHint:'"Luz 85 euros, agua 42,50, gas 63,10"',audioUnsup:'Reconocimiento de voz no disponible.',understood:'Entendido:',save:'Guardar',navReg:'Registrar',navHistory:'Historial',navReport:'Informe',costPerPerson:'Coste medio por persona / mes',monthlyComp:'Comparativo por Periodo (EUR)',totalLine:'Total en el Tiempo (EUR)',costPerDay:'Coste Diario (EUR/dia)',distribution:'Distribucion',exportPDF:'Exportar PDF',exportBackup:'Exportar Backup',importBackup:'Importar Backup',noData:'Registra facturas para ver el informe',confirmDel:'Eliminar este registro?',cancel:'Cancelar',delete:'Eliminar',savedOk:'Registro guardado!',deletedOk:'Registro eliminado!',backupOk:'Backup exportado!',importOk:'Backup importado!',importFail:'Error al importar.',noHistory:'Ningun registro aun',fillOne:'Rellena al menos un valor',lingua:'Idioma',appTitle:'Facturas de Casa',speechLang:'es-ES',mn:['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic']},
+  pt:{luce:'Luz',acqua:'Agua',invoiceDate:'Data fatura',abitanti:'Moradores',tapToRecord:'Toque para gravar',recording:'Gravando... toque para parar',audioHint:'"Luz 85 euros, agua 42,50, gas 63,10"',audioUnsup:'Reconhecimento de voz nao disponivel.',understood:'Entendi:',save:'Salvar',navReg:'Registrar',navHistory:'Historico',navReport:'Relatorio',costPerPerson:'Custo medio por pessoa / mes',monthlyComp:'Comparativo por Periodo (EUR)',totalLine:'Total no Tempo (EUR)',costPerDay:'Custo Diario (EUR/dia)',distribution:'Distribuicao',exportPDF:'Exportar PDF',exportBackup:'Exportar Backup',importBackup:'Importar Backup',noData:'Registre contas para ver o relatorio',confirmDel:'Apagar este registro?',cancel:'Cancelar',delete:'Apagar',savedOk:'Registro salvo!',deletedOk:'Registro apagado!',backupOk:'Backup exportado!',importOk:'Backup importado!',importFail:'Erro ao importar.',noHistory:'Nenhum registro ainda',fillOne:'Preencha pelo menos um valor',lingua:'Idioma',appTitle:'Contas da Casa',speechLang:'pt-PT',mn:['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez']}
 };
+let lang=localStorage.getItem('bollette_lang')||'it';
+const t=k=>(I[lang]&&I[lang][k])||I.it[k]||k;
 
-let currentLang = localStorage.getItem('contasCasaLang') || 'pt';
+function applyLang(){
+  document.querySelectorAll('[data-i18n]').forEach(el=>{const v=t(el.getAttribute('data-i18n'));if(v)el.textContent=v});
+  document.getElementById('appTitle').textContent=t('appTitle');
+  document.getElementById('settingsTitle').textContent=t('lingua');
+  document.querySelectorAll('.lang-option').forEach(o=>o.classList.toggle('active',o.dataset.lang===lang));
+  document.documentElement.lang=lang;
+}
+function setLang(l){lang=l;localStorage.setItem('bollette_lang',l);applyLang();refreshHistory();refreshReport();toggleSettings()}
 
-function t(key) { return LANG[currentLang][key] || LANG.pt[key] || key; }
+let settingsOpen=false;
+function toggleSettings(){settingsOpen=!settingsOpen;document.getElementById('settingsPanel').classList.toggle('open',settingsOpen);document.getElementById('clickAway').classList.toggle('show',settingsOpen)}
 
-function applyLang() {
-  document.querySelectorAll('[data-i18n]').forEach(el => {
-    const key = el.getAttribute('data-i18n');
-    if (t(key)) el.textContent = t(key);
+function goTo(scr){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('screen-'+scr).classList.add('active');
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelector(`.nav-btn[data-screen="${scr}"]`).classList.add('active');
+  if(scr==='storico')refreshHistory();
+  if(scr==='report')refreshReport();
+  if(scr!=='registra')document.getElementById('saveFloat').classList.remove('visible');
+  else checkDirty();
+}
+document.querySelectorAll('.nav-btn').forEach(b=>b.addEventListener('click',()=>goTo(b.dataset.screen)));
+
+let abitanti=parseInt(localStorage.getItem('bollette_ab'))||4;
+document.getElementById('abVal').textContent=abitanti;
+function stepAb(d){abitanti=Math.max(1,Math.min(20,abitanti+d));document.getElementById('abVal').textContent=abitanti;localStorage.setItem('bollette_ab',abitanti);checkDirty()}
+
+function checkDirty(){
+  const d=document.getElementById('inLuce').value||document.getElementById('inAcqua').value||document.getElementById('inGas').value;
+  document.getElementById('saveFloat').classList.toggle('visible',!!d);
+}
+
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+let rec=null,isRec=false;
+if(SR){
+  rec=new SR();rec.continuous=true;rec.interimResults=true;
+  rec.onresult=e=>{let txt='';for(let i=0;i<e.results.length;i++)txt+=e.results[i][0].transcript;document.getElementById('transcriptText').textContent=txt;document.getElementById('transcript').classList.add('show');parseVoice(txt)};
+  rec.onerror=()=>stopRec();rec.onend=()=>{if(isRec)stopRec()};
+}else{document.getElementById('micSection').style.display='none';document.getElementById('audioUnsup').style.display='block'}
+
+function toggleRec(){isRec?stopRec():startRec()}
+function startRec(){isRec=true;rec.lang=t('speechLang');rec.start();document.getElementById('micBtn').classList.add('recording');document.getElementById('micLabel').textContent=t('recording')}
+function stopRec(){isRec=false;try{rec.stop()}catch(e){}document.getElementById('micBtn').classList.remove('recording');document.getElementById('micLabel').textContent=t('tapToRecord')}
+
+function parseVoice(raw){
+  const s=raw.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+  const kw={luce:['luce','luz','light','electricidad'],acqua:['acqua','agua','water'],gas:['gas']};
+  function grab(t,ws){for(const w of ws){const m=t.match(new RegExp(w+'[\\s\\w]{0,15}?(\\d+[,.]?\\d*)','i'));if(m)return parseFloat(m[1].replace(',','.'))}return null}
+  const l=grab(s,kw.luce),a=grab(s,kw.acqua),g=grab(s,kw.gas);
+  if(l!==null)document.getElementById('inLuce').value=l;
+  if(a!==null)document.getElementById('inAcqua').value=a;
+  if(g!==null)document.getElementById('inGas').value=g;
+  checkDirty();
+}
+
+async function saveRecord(){
+  const luce=parseFloat(document.getElementById('inLuce').value)||0;
+  const acqua=parseFloat(document.getElementById('inAcqua').value)||0;
+  const gas=parseFloat(document.getElementById('inGas').value)||0;
+  if(luce===0&&acqua===0&&gas===0){toast(t('fillOne'),'error');return}
+  const today=new Date().toISOString().slice(0,10);
+  await db.records.add({
+    luce,luceDate:document.getElementById('inLuceDate').value||today,
+    acqua,acquaDate:document.getElementById('inAcquaDate').value||today,
+    gas,gasDate:document.getElementById('inGasDate').value||today,
+    abitanti,createdAt:new Date().toISOString()
   });
-  // Update select options
-  const statusSel = document.getElementById('inputStatus');
-  if (statusSel) {
-    statusSel.options[0].textContent = t('paid');
-    statusSel.options[1].textContent = t('pending');
-  }
-  // Update lang buttons
-  document.querySelectorAll('.lang-btn').forEach(btn => {
-    btn.classList.toggle('active', btn.dataset.lang === currentLang);
-  });
-  document.getElementById('welcomeMsg').textContent = t('welcome');
+  toast(t('savedOk'),'success');
+  ['inLuce','inAcqua','inGas'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('transcript').classList.remove('show');
+  checkDirty();
 }
 
-// Lang button clicks
-document.querySelectorAll('.lang-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    currentLang = btn.dataset.lang;
-    localStorage.setItem('contasCasaLang', currentLang);
-    applyLang();
-    refreshHome();
-    refreshHistory();
-    refreshReport();
-  });
-});
-
-// =============================================
-// NAVIGATION
-// =============================================
-let currentScreen = 'home';
-
-function goTo(screen) {
-  currentScreen = screen;
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.getElementById('screen-' + screen).classList.add('active');
-  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-  const navBtn = document.querySelector(`.nav-btn[data-screen="${screen}"]`);
-  if (navBtn) navBtn.classList.add('active');
-
-  if (screen === 'novo') prepareForm();
-  if (screen === 'historico') refreshHistory();
-  if (screen === 'relatorio') refreshReport();
-  if (screen === 'home') refreshHome();
-}
-
-document.querySelectorAll('.nav-btn').forEach(btn => {
-  btn.addEventListener('click', () => goTo(btn.dataset.screen));
-});
-
-// =============================================
-// SPEECH RECOGNITION
-// =============================================
-const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-let recognition = null;
-let isRecording = false;
-
-if (SpeechRecognition) {
-  recognition = new SpeechRecognition();
-  recognition.continuous = true;
-  recognition.interimResults = true;
-
-  recognition.onresult = (event) => {
-    let transcript = '';
-    for (let i = 0; i < event.results.length; i++) {
-      transcript += event.results[i][0].transcript;
-    }
-    document.getElementById('transcriptText').textContent = transcript;
-    document.getElementById('transcriptBox').classList.add('show');
-    parseTranscript(transcript);
-  };
-
-  recognition.onerror = (event) => {
-    console.error('Speech error:', event.error);
-    stopRecording();
-  };
-
-  recognition.onend = () => {
-    if (isRecording) stopRecording();
-  };
-} else {
-  document.getElementById('audioArea').style.display = 'none';
-  document.getElementById('audioUnsupported').style.display = 'block';
-}
-
-function toggleRecording() {
-  if (!recognition) return;
-  if (isRecording) {
-    stopRecording();
-  } else {
-    startRecording();
-  }
-}
-
-function startRecording() {
-  isRecording = true;
-  recognition.lang = LANG[currentLang].speechLang;
-  recognition.start();
-  document.getElementById('audioArea').classList.add('recording');
-  document.getElementById('audioText').textContent = t('recording');
-}
-
-function stopRecording() {
-  isRecording = false;
-  try { recognition.stop(); } catch(e) {}
-  document.getElementById('audioArea').classList.remove('recording');
-  document.getElementById('audioText').textContent = t('tapToRecord');
-}
-
-// =============================================
-// PARSE TRANSCRIPT → FILL FIELDS
-// =============================================
-function parseTranscript(text) {
-  const lower = text.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-
-  // Keywords per language
-  const keywords = {
-    luz: ['luz', 'luce', 'electricidad', 'elettricita', 'eletricidade', 'light'],
-    agua: ['agua', 'acqua', 'eau', 'water'],
-    gas: ['gas', 'gaz']
-  };
-
-  // Extract number after keyword
-  function findValueAfter(text, keys) {
-    for (const key of keys) {
-      // Match: keyword + optional words + number
-      const regex = new RegExp(key + '[\\s\\w]{0,20}?(\\d+[,.]?\\d*)', 'i');
-      const match = text.match(regex);
-      if (match) {
-        return parseFloat(match[1].replace(',', '.'));
-      }
-    }
-    return null;
-  }
-
-  const luz = findValueAfter(lower, keywords.luz);
-  const agua = findValueAfter(lower, keywords.agua);
-  const gas = findValueAfter(lower, keywords.gas);
-
-  if (luz !== null) document.getElementById('inputLuz').value = luz;
-  if (agua !== null) document.getElementById('inputAgua').value = agua;
-  if (gas !== null) document.getElementById('inputGas').value = gas;
-
-  // Detect paid/pending
-  if (lower.includes('pago') || lower.includes('pagado') || lower.includes('pagato') || lower.includes('paga')) {
-    document.getElementById('inputStatus').value = 'pago';
-  } else if (lower.includes('pendente') || lower.includes('pendiente') || lower.includes('attesa')) {
-    document.getElementById('inputStatus').value = 'pendente';
-  }
-}
-
-// =============================================
-// FORM
-// =============================================
-function prepareForm() {
-  const now = new Date();
-  const monthStr = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
-  document.getElementById('inputMonth').value = monthStr;
-  // Reset fields
-  document.getElementById('inputLuz').value = '';
-  document.getElementById('inputAgua').value = '';
-  document.getElementById('inputGas').value = '';
-  document.getElementById('inputStatus').value = 'pago';
-  document.getElementById('transcriptBox').classList.remove('show');
-}
-
-async function saveRecord() {
-  const luz = parseFloat(document.getElementById('inputLuz').value) || 0;
-  const agua = parseFloat(document.getElementById('inputAgua').value) || 0;
-  const gas = parseFloat(document.getElementById('inputGas').value) || 0;
-  const month = document.getElementById('inputMonth').value;
-  const status = document.getElementById('inputStatus').value;
-  const moradores = parseInt(document.getElementById('inputMoradores').value) || 4;
-
-  if (!month) { showToast('Selecione o mes'); return; }
-  if (luz === 0 && agua === 0 && gas === 0) { showToast('Preencha pelo menos um valor'); return; }
-
-  // Check if month already exists
-  const existing = await db.records.where('month').equals(month).first();
-  if (existing) {
-    // Update existing
-    await db.records.update(existing.id, { luz, agua, gas, status, moradores, createdAt: new Date().toISOString() });
-  } else {
-    await db.records.add({ month, luz, agua, gas, status, moradores, createdAt: new Date().toISOString() });
-  }
-
-  showToast(t('savedOk'));
-  setTimeout(() => goTo('home'), 800);
-}
-
-// =============================================
-// HOME SCREEN
-// =============================================
-async function refreshHome() {
-  const records = await db.records.orderBy('month').reverse().toArray();
-  const sub = document.getElementById('headerSub');
-  const summary = document.getElementById('homeSummary');
-  const welcomeSub = document.getElementById('welcomeSub');
-
-  if (records.length === 0) {
-    welcomeSub.textContent = t('noData');
-    sub.textContent = '';
-    summary.innerHTML = '';
-    return;
-  }
-
-  const last = records[0];
-  const monthLabel = formatMonth(last.month);
-  welcomeSub.textContent = t('lastRecord') + ': ' + monthLabel;
-  sub.textContent = records.length + ' registros';
-
-  const total = (last.luz + last.agua + last.gas).toFixed(2);
-  summary.innerHTML = `
-    <div class="card card-luz"><div class="card-row"><div><div class="card-label">${t('electricity2')}</div><div class="card-sub">${monthLabel}</div></div><div class="card-value">${last.luz.toFixed(2)} EUR</div></div></div>
-    <div class="card card-agua"><div class="card-row"><div><div class="card-label">${t('water2')}</div><div class="card-sub">${monthLabel}</div></div><div class="card-value">${last.agua.toFixed(2)} EUR</div></div></div>
-    <div class="card card-gas"><div class="card-row"><div><div class="card-label">${t('gas2')}</div><div class="card-sub">${monthLabel}</div></div><div class="card-value">${last.gas.toFixed(2)} EUR</div></div></div>
-    <div class="card"><div class="card-row"><div><div class="card-label">Total</div></div><div class="card-value" style="color:#2563eb">${total} EUR</div></div></div>
-  `;
-}
-
-// =============================================
-// HISTORY SCREEN
-// =============================================
-let deleteTargetId = null;
-
-async function refreshHistory() {
-  const records = await db.records.orderBy('month').reverse().toArray();
-  const list = document.getElementById('historyList');
-
-  if (records.length === 0) {
-    list.innerHTML = `<div class="empty-state"><svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg><p>${t('noData')}</p></div>`;
-    return;
-  }
-
-  list.innerHTML = records.map(r => {
-    const total = (r.luz + r.agua + r.gas).toFixed(2);
-    const badgeClass = r.status === 'pago' ? 'badge-pago' : 'badge-pendente';
-    const badgeText = r.status === 'pago' ? t('paid') : t('pending');
-    return `
-      <div class="history-item" onclick="openDeleteModal(${r.id}, '${formatMonth(r.month)}')">
-        <div>
-          <div class="history-date">${formatMonth(r.month)}</div>
-          <div class="history-detail">L: ${r.luz.toFixed(2)} | A: ${r.agua.toFixed(2)} | G: ${r.gas.toFixed(2)}</div>
-        </div>
-        <div style="text-align:right">
-          <div class="history-total">${total} EUR</div>
-          <span class="badge ${badgeClass}">${badgeText}</span>
-        </div>
-      </div>
-    `;
+let delId=null;
+async function refreshHistory(){
+  const recs=await db.records.orderBy('createdAt').reverse().toArray();
+  const el=document.getElementById('historyList');
+  if(!recs.length){el.innerHTML=`<div class="empty"><div class="empty-icon">&#128203;</div><p>${t('noHistory')}</p></div>`;return}
+  el.innerHTML=recs.map((r,i)=>{
+    const total=(r.luce+r.acqua+r.gas).toFixed(2);
+    const label=fmtDate(r.luceDate||r.acquaDate||r.gasDate);
+    return `<div class="h-item" style="animation-delay:${i*.05}s" onclick="openDel(${r.id},'${label}')"><div><div class="h-date">${label}</div><div class="h-detail">&#9889; ${r.luce.toFixed(2)} &nbsp; &#128167; ${r.acqua.toFixed(2)} &nbsp; &#128293; ${r.gas.toFixed(2)}</div></div><div><div class="h-total">${total} &euro;</div></div></div>`;
   }).join('');
 }
+function openDel(id,label){delId=id;document.getElementById('delModalText').textContent=label;document.getElementById('delModal').classList.add('show')}
+function closeDel(){delId=null;document.getElementById('delModal').classList.remove('show')}
+async function doDel(){if(delId)await db.records.delete(delId);closeDel();toast(t('deletedOk'),'success');refreshHistory()}
 
-function openDeleteModal(id, monthLabel) {
-  deleteTargetId = id;
-  document.getElementById('deleteModalText').textContent = monthLabel;
-  document.getElementById('deleteModal').classList.add('show');
-}
-function closeDeleteModal() {
-  deleteTargetId = null;
-  document.getElementById('deleteModal').classList.remove('show');
-}
-async function confirmDelete() {
-  if (deleteTargetId) {
-    await db.records.delete(deleteTargetId);
-    showToast(t('deletedOk'));
+let chBar,chLine,chDaily,chPie;
+async function refreshReport(){
+  const recs=await db.records.orderBy('createdAt').toArray();
+  const empty=document.getElementById('reportEmpty'),content=document.getElementById('reportContent');
+  if(!recs.length){empty.style.display='block';content.style.display='none';return}
+  empty.style.display='none';content.style.display='block';
+  let sL=0,sA=0,sG=0;
+  recs.forEach(r=>{sL+=r.luce;sA+=r.acqua;sG+=r.gas});
+  const sT=sL+sA+sG,avgAb=recs.reduce((s,r)=>s+r.abitanti,0)/recs.length;
+  document.getElementById('rPerPerson').textContent=(sT/recs.length/avgAb).toFixed(2)+' \u20ac';
+  document.getElementById('rAbitanti').textContent=Math.round(avgAb)+' '+t('abitanti');
+  document.getElementById('rLuce').textContent=sL.toFixed(2)+'\u20ac';
+  document.getElementById('rAcqua').textContent=sA.toFixed(2)+'\u20ac';
+  document.getElementById('rGas').textContent=sG.toFixed(2)+'\u20ac';
+
+  const labels=recs.map(r=>fmtShort(r.luceDate||r.acquaDate||r.gasDate));
+  const dL=recs.map(r=>r.luce),dA=recs.map(r=>r.acqua),dG=recs.map(r=>r.gas),dT=recs.map(r=>r.luce+r.acqua+r.gas);
+
+  // Daily cost (period-based)
+  const dyL=[],dyA=[],dyG=[],dyLbl=[];
+  for(let i=0;i<recs.length;i++){
+    if(i===0){dyL.push(null);dyA.push(null);dyG.push(null);dyLbl.push(labels[i]);continue}
+    const dl=daysBt(recs[i-1].luceDate,recs[i].luceDate)||30;
+    const da=daysBt(recs[i-1].acquaDate,recs[i].acquaDate)||30;
+    const dg=daysBt(recs[i-1].gasDate,recs[i].gasDate)||30;
+    dyL.push(+(recs[i].luce/dl).toFixed(2));dyA.push(+(recs[i].acqua/da).toFixed(2));dyG.push(+(recs[i].gas/dg).toFixed(2));dyLbl.push(labels[i]);
   }
-  closeDeleteModal();
-  refreshHistory();
-}
 
-// =============================================
-// REPORT SCREEN + CHARTS
-// =============================================
-let chartBar = null, chartLine = null, chartPie = null;
+  if(chBar)chBar.destroy();if(chLine)chLine.destroy();if(chDaily)chDaily.destroy();if(chPie)chPie.destroy();
 
-async function refreshReport() {
-  const records = await db.records.orderBy('month').toArray();
-  const empty = document.getElementById('reportEmpty');
-  const charts = document.getElementById('reportCharts');
+  chBar=new Chart(document.getElementById('chBar'),{type:'bar',data:{labels,datasets:[
+    {label:t('luce'),data:dL,backgroundColor:'#f59e0b',borderRadius:6},
+    {label:t('acqua'),data:dA,backgroundColor:'#06b6d4',borderRadius:6},
+    {label:'Gas',data:dG,backgroundColor:'#f43f5e',borderRadius:6}
+  ]},options:{responsive:true,maintainAspectRatio:true,plugins:{legend:{position:'bottom',labels:{boxWidth:10,font:{size:11}}}},scales:{y:{beginAtZero:true,grid:{color:'#f1f5f9'},ticks:{font:{size:10}}},x:{grid:{display:false},ticks:{font:{size:10}}}}}});
 
-  if (records.length === 0) {
-    empty.style.display = 'block';
-    charts.style.display = 'none';
-    return;
+  chLine=new Chart(document.getElementById('chLine'),{type:'line',data:{labels,datasets:[{label:'Total',data:dT,borderColor:'#6366f1',backgroundColor:'rgba(99,102,241,.1)',fill:true,tension:.35,pointRadius:5,pointBackgroundColor:'#6366f1',borderWidth:2.5}]},options:{responsive:true,maintainAspectRatio:true,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,grid:{color:'#f1f5f9'},ticks:{font:{size:10}}},x:{grid:{display:false},ticks:{font:{size:10}}}}}});
+
+  if(dyLbl.length>1){
+    chDaily=new Chart(document.getElementById('chDaily'),{type:'bar',data:{labels:dyLbl.slice(1),datasets:[
+      {label:t('luce'),data:dyL.slice(1),backgroundColor:'rgba(245,158,11,.75)',borderRadius:6},
+      {label:t('acqua'),data:dyA.slice(1),backgroundColor:'rgba(6,182,212,.75)',borderRadius:6},
+      {label:'Gas',data:dyG.slice(1),backgroundColor:'rgba(244,63,94,.75)',borderRadius:6}
+    ]},options:{responsive:true,maintainAspectRatio:true,plugins:{legend:{position:'bottom',labels:{boxWidth:10,font:{size:11}}}},scales:{y:{beginAtZero:true,grid:{color:'#f1f5f9'},ticks:{font:{size:10}}},x:{grid:{display:false},ticks:{font:{size:10}}}}}});
   }
-  empty.style.display = 'none';
-  charts.style.display = 'block';
 
-  // Calculate totals
-  let sumLuz = 0, sumAgua = 0, sumGas = 0;
-  records.forEach(r => { sumLuz += r.luz; sumAgua += r.agua; sumGas += r.gas; });
-  const sumTotal = sumLuz + sumAgua + sumGas;
-  const avgMoradores = records.reduce((s, r) => s + r.moradores, 0) / records.length;
-  const perPerson = (sumTotal / records.length / avgMoradores).toFixed(2);
-
-  document.getElementById('totalLuz').textContent = sumLuz.toFixed(2);
-  document.getElementById('totalAgua').textContent = sumAgua.toFixed(2);
-  document.getElementById('totalGas').textContent = sumGas.toFixed(2);
-  document.getElementById('totalGeral').textContent = sumTotal.toFixed(2);
-  document.getElementById('perPersonValue').textContent = perPerson + ' EUR';
-  document.getElementById('perPersonBox').querySelector('.label').textContent =
-    t('costPerPerson') + ' (' + Math.round(avgMoradores) + ')';
-
-  // Chart data
-  const labels = records.map(r => formatMonthShort(r.month));
-  const dataLuz = records.map(r => r.luz);
-  const dataAgua = records.map(r => r.agua);
-  const dataGas = records.map(r => r.gas);
-  const dataTotals = records.map(r => r.luz + r.agua + r.gas);
-
-  // Destroy old charts
-  if (chartBar) chartBar.destroy();
-  if (chartLine) chartLine.destroy();
-  if (chartPie) chartPie.destroy();
-
-  // Bar chart
-  chartBar = new Chart(document.getElementById('chartBar'), {
-    type: 'bar',
-    data: {
-      labels,
-      datasets: [
-        { label: t('electricity2'), data: dataLuz, backgroundColor: '#f59e0b', borderRadius: 4 },
-        { label: t('water2'), data: dataAgua, backgroundColor: '#3b82f6', borderRadius: 4 },
-        { label: t('gas2'), data: dataGas, backgroundColor: '#ef4444', borderRadius: 4 },
-      ]
-    },
-    options: {
-      responsive: true, maintainAspectRatio: true,
-      plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } } },
-      scales: { y: { beginAtZero: true, ticks: { font: { size: 10 } } }, x: { ticks: { font: { size: 10 } } } }
-    }
-  });
-
-  // Line chart
-  chartLine = new Chart(document.getElementById('chartLine'), {
-    type: 'line',
-    data: {
-      labels,
-      datasets: [{
-        label: 'Total', data: dataTotals,
-        borderColor: '#2563eb', backgroundColor: 'rgba(37,99,235,0.1)',
-        fill: true, tension: 0.3, pointRadius: 5, pointBackgroundColor: '#2563eb'
-      }]
-    },
-    options: {
-      responsive: true, maintainAspectRatio: true,
-      plugins: { legend: { display: false } },
-      scales: { y: { beginAtZero: true, ticks: { font: { size: 10 } } }, x: { ticks: { font: { size: 10 } } } }
-    }
-  });
-
-  // Pie chart
-  chartPie = new Chart(document.getElementById('chartPie'), {
-    type: 'doughnut',
-    data: {
-      labels: [t('electricity2'), t('water2'), t('gas2')],
-      datasets: [{
-        data: [sumLuz, sumAgua, sumGas],
-        backgroundColor: ['#f59e0b', '#3b82f6', '#ef4444'],
-        borderWidth: 0
-      }]
-    },
-    options: {
-      responsive: true, maintainAspectRatio: true,
-      plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } } }
-    }
-  });
+  chPie=new Chart(document.getElementById('chPie'),{type:'doughnut',data:{labels:[t('luce'),t('acqua'),'Gas'],datasets:[{data:[sL,sA,sG],backgroundColor:['#f59e0b','#06b6d4','#f43f5e'],borderWidth:0,spacing:2}]},options:{responsive:true,maintainAspectRatio:true,cutout:'65%',plugins:{legend:{position:'bottom',labels:{boxWidth:10,font:{size:11}}}}}});
 }
 
-// =============================================
-// PDF EXPORT
-// =============================================
-function exportPDF() {
-  const element = document.getElementById('reportCharts');
-  const opt = {
-    margin: 10,
-    filename: 'contas-da-casa.pdf',
-    image: { type: 'jpeg', quality: 0.95 },
-    html2canvas: { scale: 2, useCORS: true },
-    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-  };
-  html2pdf().set(opt).from(element).save();
+function exportPDF(){html2pdf().set({margin:8,filename:'bollette-di-casa.pdf',image:{type:'jpeg',quality:.95},html2canvas:{scale:2,useCORS:true},jsPDF:{unit:'mm',format:'a4',orientation:'portrait'}}).from(document.getElementById('reportContent')).save()}
+
+async function exportBackup(){
+  const records=await db.records.toArray();
+  const blob=new Blob([JSON.stringify({v:2,lang,records,at:new Date().toISOString()},null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='bollette-backup-'+new Date().toISOString().slice(0,10)+'.json';a.click();URL.revokeObjectURL(a.href);toast(t('backupOk'),'success');
+}
+async function importBackup(e){
+  const file=e.target.files[0];if(!file)return;
+  try{const d=JSON.parse(await file.text());if(!d.records||!Array.isArray(d.records))throw 0;await db.records.clear();
+    for(const r of d.records)await db.records.add({luce:r.luce||0,luceDate:r.luceDate||r.month||'',acqua:r.acqua||0,acquaDate:r.acquaDate||r.month||'',gas:r.gas||0,gasDate:r.gasDate||r.month||'',abitanti:r.abitanti||r.moradores||4,createdAt:r.createdAt||new Date().toISOString()});
+    toast(t('importOk'),'success');refreshHistory();refreshReport();
+  }catch(err){toast(t('importFail'),'error')}e.target.value='';
 }
 
-// =============================================
-// BACKUP EXPORT / IMPORT
-// =============================================
-async function exportBackup() {
-  const records = await db.records.toArray();
-  const data = JSON.stringify({ version: 1, lang: currentLang, records, exportedAt: new Date().toISOString() }, null, 2);
-  const blob = new Blob([data], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = 'contas-casa-backup-' + new Date().toISOString().slice(0, 10) + '.json';
-  a.click();
-  URL.revokeObjectURL(url);
-  showToast(t('backupOk'));
-}
+function fmtDate(d){if(!d)return'--';const p=d.split('-');return parseInt(p[2])+' '+I[lang].mn[parseInt(p[1])-1]+' '+p[0]}
+function fmtShort(d){if(!d)return'--';const p=d.split('-');return I[lang].mn[parseInt(p[1])-1]+' '+p[0].slice(2)}
+function daysBt(a,b){if(!a||!b)return 0;return Math.round(Math.abs(new Date(b)-new Date(a))/(864e5))}
+function toast(msg,type){const el=document.getElementById('toast');el.textContent=msg;el.className='toast'+(type?' '+type:'');el.classList.add('show');setTimeout(()=>el.classList.remove('show'),2200)}
 
-async function importBackup(event) {
-  const file = event.target.files[0];
-  if (!file) return;
-  try {
-    const text = await file.text();
-    const data = JSON.parse(text);
-    if (!data.records || !Array.isArray(data.records)) throw new Error('Invalid');
-    // Clear and re-import
-    await db.records.clear();
-    for (const r of data.records) {
-      await db.records.add({
-        month: r.month, luz: r.luz, agua: r.agua, gas: r.gas,
-        status: r.status, moradores: r.moradores, createdAt: r.createdAt
-      });
-    }
-    showToast(t('importOk'));
-    refreshHome();
-    refreshHistory();
-    refreshReport();
-  } catch (e) {
-    showToast(t('importFail'));
-  }
-  event.target.value = '';
-}
-
-// =============================================
-// UTILITIES
-// =============================================
-function formatMonth(monthStr) {
-  const [y, m] = monthStr.split('-');
-  return t('months')[parseInt(m) - 1] + ' ' + y;
-}
-
-function formatMonthShort(monthStr) {
-  const [y, m] = monthStr.split('-');
-  return t('months')[parseInt(m) - 1] + ' ' + y.slice(2);
-}
-
-function showToast(msg) {
-  const el = document.getElementById('toast');
-  el.textContent = msg;
-  el.classList.add('show');
-  setTimeout(() => el.classList.remove('show'), 2200);
-}
-
-// =============================================
-// INIT
-// =============================================
 applyLang();
-refreshHome();
-prepareForm();
+const today=new Date().toISOString().slice(0,10);
+document.getElementById('inLuceDate').value=today;
+document.getElementById('inAcquaDate').value=today;
+document.getElementById('inGasDate').value=today;
 </script>
 </body>
 </html>
