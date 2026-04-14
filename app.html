@@ -1,0 +1,979 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Contas da Casa</title>
+<script src="https://cdn.jsdelivr.net/npm/dexie@3/dist/dexie.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+<script src="https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js"></script>
+<style>
+/* ===== RESET & BASE ===== */
+*{margin:0;padding:0;box-sizing:border-box}
+html{font-size:16px;-webkit-tap-highlight-color:transparent}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+  background:#f5f5f5;
+  color:#333;
+  min-height:100vh;
+  min-height:100dvh;
+  overflow:hidden;
+}
+
+/* ===== APP SHELL ===== */
+#app{
+  max-width:480px;
+  margin:0 auto;
+  height:100vh;
+  height:100dvh;
+  display:flex;
+  flex-direction:column;
+  background:#fff;
+  position:relative;
+}
+
+/* ===== HEADER ===== */
+.app-header{
+  padding:16px 20px 12px;
+  background:#fff;
+  border-bottom:1px solid #eee;
+  flex-shrink:0;
+}
+.app-header h1{font-size:18px;color:#1a1a1a}
+.app-header small{font-size:12px;color:#999}
+
+/* ===== SCREENS ===== */
+.screen{
+  display:none;
+  flex-direction:column;
+  flex:1;
+  overflow-y:auto;
+  padding:16px 20px 100px;
+  -webkit-overflow-scrolling:touch;
+}
+.screen.active{display:flex}
+
+/* ===== BOTTOM NAV ===== */
+.bottom-nav{
+  display:flex;
+  background:#fff;
+  border-top:1px solid #eee;
+  padding:6px 0 env(safe-area-inset-bottom,12px);
+  flex-shrink:0;
+  position:absolute;
+  bottom:0;left:0;right:0;
+  z-index:100;
+}
+.nav-btn{
+  flex:1;text-align:center;padding:8px 4px;
+  font-size:10px;color:#999;background:none;border:none;
+  cursor:pointer;transition:color .2s;
+  display:flex;flex-direction:column;align-items:center;gap:2px;
+}
+.nav-btn.active{color:#2563eb;font-weight:600}
+.nav-btn svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+
+/* ===== CARDS ===== */
+.card{
+  background:#f8f9fa;border-radius:12px;padding:14px 16px;
+  margin-bottom:10px;
+}
+.card-row{display:flex;justify-content:space-between;align-items:center}
+.card-label{font-size:14px;color:#555}
+.card-value{font-size:18px;font-weight:700;color:#1a1a1a}
+.card-sub{font-size:11px;color:#999;margin-top:2px}
+
+.card-luz{border-left:4px solid #f59e0b}
+.card-agua{border-left:4px solid #3b82f6}
+.card-gas{border-left:4px solid #ef4444}
+
+/* ===== BUTTONS ===== */
+.btn{
+  width:100%;padding:14px;border:none;border-radius:12px;
+  font-size:15px;font-weight:600;cursor:pointer;
+  transition:opacity .2s;display:flex;align-items:center;justify-content:center;gap:8px;
+}
+.btn:active{opacity:.8}
+.btn-primary{background:#2563eb;color:#fff}
+.btn-success{background:#16a34a;color:#fff}
+.btn-purple{background:#7c3aed;color:#fff}
+.btn-outline{background:transparent;border:1.5px solid #ddd;color:#666;font-size:13px}
+.btn-danger{background:#ef4444;color:#fff;font-size:13px;padding:10px}
+.btn-sm{padding:10px;font-size:13px}
+
+/* ===== FORM ===== */
+.form-group{margin-bottom:14px}
+.form-group label{
+  display:block;font-size:12px;font-weight:600;color:#666;
+  text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;
+}
+.form-input{
+  width:100%;padding:12px 14px;border:1.5px solid #ddd;
+  border-radius:10px;font-size:15px;background:#fafafa;
+  outline:none;transition:border .2s;
+}
+.form-input:focus{border-color:#2563eb;background:#fff}
+select.form-input{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M2 4l4 4 4-4' fill='none' stroke='%23999' stroke-width='1.5'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center}
+
+/* ===== AUDIO AREA ===== */
+.audio-area{
+  display:flex;flex-direction:column;align-items:center;
+  padding:20px;background:#f0f7ff;border:2px dashed #93c5fd;
+  border-radius:14px;margin-bottom:14px;cursor:pointer;
+  transition:all .2s;user-select:none;
+}
+.audio-area:active{transform:scale(.98)}
+.audio-area.recording{background:#fef2f2;border-color:#fca5a5}
+.audio-area.recording .mic-circle{background:#ef4444;animation:pulse 1s infinite}
+.mic-circle{
+  width:56px;height:56px;border-radius:50%;
+  background:#2563eb;display:flex;align-items:center;justify-content:center;
+  margin-bottom:8px;transition:background .2s;
+}
+.mic-circle svg{width:24px;height:24px;stroke:#fff;fill:none;stroke-width:2}
+.audio-area p{font-size:13px;color:#555;margin-top:4px}
+.audio-area small{font-size:11px;color:#999}
+.audio-unsupported{display:none;color:#d97706;font-size:12px;background:#fef3c7;padding:8px 12px;border-radius:8px;margin-bottom:14px;text-align:center}
+
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+
+/* ===== TRANSCRIPT ===== */
+.transcript-box{
+  background:#fffbeb;border:1px solid #fde68a;border-radius:10px;
+  padding:12px;margin-bottom:14px;font-size:13px;color:#92400e;
+  display:none;
+}
+.transcript-box.show{display:block}
+.transcript-label{font-weight:600;font-size:11px;color:#b45309;margin-bottom:4px}
+
+/* ===== VALUES GRID ===== */
+.values-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px}
+.value-box{
+  text-align:center;padding:10px 6px;background:#f8f9fa;
+  border-radius:10px;border:1.5px solid #eee;
+}
+.value-box .icon{font-size:22px;display:block;margin-bottom:4px}
+.value-box input{
+  width:100%;text-align:center;border:none;background:transparent;
+  font-size:18px;font-weight:700;color:#333;outline:none;padding:4px 0;
+}
+.value-box small{font-size:11px;color:#888}
+
+/* ===== HISTORY LIST ===== */
+.history-item{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:14px 16px;background:#f8f9fa;border-radius:10px;
+  margin-bottom:8px;cursor:pointer;transition:background .2s;
+}
+.history-item:active{background:#eef2ff}
+.history-date{font-size:14px;font-weight:600;color:#333}
+.history-detail{font-size:11px;color:#888;margin-top:2px}
+.history-total{font-size:15px;font-weight:700;color:#333;text-align:right}
+.badge{font-size:10px;padding:2px 8px;border-radius:20px;font-weight:600;display:inline-block;margin-top:4px}
+.badge-pago{background:#dcfce7;color:#16a34a}
+.badge-pendente{background:#fef3c7;color:#d97706}
+
+/* ===== REPORT ===== */
+.report-section{margin-bottom:16px}
+.report-title{font-size:13px;font-weight:600;color:#555;margin-bottom:10px}
+.per-person-box{
+  text-align:center;padding:14px;background:#f0f7ff;border-radius:12px;margin-bottom:12px;
+}
+.per-person-box .value{font-size:24px;font-weight:700;color:#2563eb}
+.per-person-box .label{font-size:12px;color:#888;margin-top:2px}
+.totals-row{display:flex;justify-content:space-between;padding:12px;background:#f8f9fa;border-radius:10px;margin-bottom:12px}
+.total-item{text-align:center;flex:1}
+.total-label{font-size:11px;color:#888}
+.total-value{font-size:16px;font-weight:700;color:#333}
+.chart-box{background:#fff;border:1px solid #eee;border-radius:12px;padding:12px;margin-bottom:12px}
+.chart-box canvas{max-height:200px}
+
+/* ===== SETTINGS ROW ===== */
+.settings-row{
+  display:flex;gap:8px;margin-bottom:14px;
+}
+.settings-row .form-group{flex:1;margin-bottom:0}
+
+/* ===== WELCOME ===== */
+.welcome{text-align:center;padding:16px 0}
+.welcome h2{font-size:22px;color:#1a1a1a;margin-bottom:2px}
+.welcome p{color:#888;font-size:14px}
+
+/* ===== EMPTY STATE ===== */
+.empty-state{
+  text-align:center;padding:40px 20px;color:#999;
+}
+.empty-state svg{width:48px;height:48px;stroke:#ccc;fill:none;stroke-width:1.5;margin-bottom:12px}
+.empty-state p{font-size:14px}
+
+/* ===== TOAST ===== */
+.toast{
+  position:fixed;bottom:90px;left:50%;transform:translateX(-50%) translateY(10px);
+  background:#333;color:#fff;padding:12px 20px;border-radius:10px;
+  font-size:13px;opacity:0;transition:all .3s;pointer-events:none;z-index:200;
+  max-width:320px;text-align:center;
+}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* ===== MODAL ===== */
+.modal-overlay{
+  position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);
+  z-index:300;display:none;align-items:flex-end;justify-content:center;
+}
+.modal-overlay.show{display:flex}
+.modal{
+  background:#fff;border-radius:16px 16px 0 0;padding:24px 20px;
+  max-width:480px;width:100%;max-height:70vh;overflow-y:auto;
+}
+.modal h3{font-size:16px;margin-bottom:12px;color:#333}
+.modal-actions{display:flex;gap:8px;margin-top:16px}
+.modal-actions .btn{flex:1}
+
+/* ===== LANGUAGE SELECT ===== */
+.lang-bar{
+  display:flex;gap:6px;margin-bottom:14px;
+}
+.lang-btn{
+  flex:1;padding:8px;border:1.5px solid #ddd;border-radius:8px;
+  background:#fff;font-size:12px;font-weight:600;cursor:pointer;
+  text-align:center;transition:all .2s;color:#666;
+}
+.lang-btn.active{border-color:#2563eb;background:#eff6ff;color:#2563eb}
+
+/* ===== PRINT HIDE ===== */
+@media print{
+  .bottom-nav,.app-header,.btn,.audio-area,.nav-btn{display:none!important}
+  .screen{overflow:visible!important;padding-bottom:0!important}
+  #app{height:auto}
+}
+</style>
+</head>
+<body>
+
+<div id="app">
+  <!-- HEADER -->
+  <div class="app-header">
+    <h1 id="headerTitle">Contas da Casa</h1>
+    <small id="headerSub"></small>
+  </div>
+
+  <!-- ============ SCREEN: HOME ============ -->
+  <div class="screen active" id="screen-home">
+    <div class="welcome">
+      <h2 id="welcomeMsg">Contas da Casa</h2>
+      <p id="welcomeSub">Nenhum registro ainda</p>
+    </div>
+
+    <div id="homeSummary"></div>
+
+    <button class="btn btn-primary" onclick="goTo('novo')" style="margin-top:12px">
+      <svg width="18" height="18" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      <span data-i18n="newRecord">Novo Registro</span>
+    </button>
+
+    <div style="margin-top:16px">
+      <div class="settings-row">
+        <div class="form-group">
+          <label data-i18n="language">Idioma</label>
+          <div class="lang-bar">
+            <button class="lang-btn active" data-lang="pt">PT</button>
+            <button class="lang-btn" data-lang="es">ES</button>
+            <button class="lang-btn" data-lang="it">IT</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ SCREEN: NOVO REGISTRO ============ -->
+  <div class="screen" id="screen-novo">
+
+    <div class="audio-area" id="audioArea" onclick="toggleRecording()">
+      <div class="mic-circle">
+        <svg viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+      </div>
+      <p id="audioText" data-i18n="tapToRecord">Toque para gravar</p>
+      <small id="audioHint" data-i18n="audioHint">"Luz 85 euros, agua 42,50, gas 63,10"</small>
+    </div>
+    <div class="audio-unsupported" id="audioUnsupported" data-i18n="audioUnsupported">
+      Reconhecimento de voz nao disponivel neste navegador. Use os campos abaixo.
+    </div>
+
+    <div class="transcript-box" id="transcriptBox">
+      <div class="transcript-label" data-i18n="understood">Entendi:</div>
+      <div id="transcriptText"></div>
+    </div>
+
+    <div class="values-grid">
+      <div class="value-box">
+        <span class="icon" style="color:#f59e0b">&#9889;</span>
+        <input type="number" step="0.01" id="inputLuz" placeholder="0,00" inputmode="decimal">
+        <small data-i18n="electricity">Luz (EUR)</small>
+      </div>
+      <div class="value-box">
+        <span class="icon" style="color:#3b82f6">&#128167;</span>
+        <input type="number" step="0.01" id="inputAgua" placeholder="0,00" inputmode="decimal">
+        <small data-i18n="water">Agua (EUR)</small>
+      </div>
+      <div class="value-box">
+        <span class="icon" style="color:#ef4444">&#128293;</span>
+        <input type="number" step="0.01" id="inputGas" placeholder="0,00" inputmode="decimal">
+        <small data-i18n="gas">Gas (EUR)</small>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label data-i18n="invoiceMonth">Mes da fatura</label>
+      <input type="month" class="form-input" id="inputMonth">
+    </div>
+
+    <div class="settings-row">
+      <div class="form-group">
+        <label data-i18n="status">Status</label>
+        <select class="form-input" id="inputStatus">
+          <option value="pago" data-i18n-opt="paid">Pago</option>
+          <option value="pendente" data-i18n-opt="pending">Pendente</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label data-i18n="residents">Moradores</label>
+        <input type="number" class="form-input" id="inputMoradores" value="4" min="1" max="20">
+      </div>
+    </div>
+
+    <button class="btn btn-success" onclick="saveRecord()" id="btnSave">
+      <svg width="18" height="18" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+      <span data-i18n="save">Salvar Registro</span>
+    </button>
+  </div>
+
+  <!-- ============ SCREEN: HISTORICO ============ -->
+  <div class="screen" id="screen-historico">
+    <div id="historyList"></div>
+  </div>
+
+  <!-- ============ SCREEN: RELATORIO ============ -->
+  <div class="screen" id="screen-relatorio">
+    <div id="reportContent">
+      <div class="empty-state" id="reportEmpty">
+        <svg viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-9-9"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        <p data-i18n="noDataReport">Registre contas para ver o relatorio</p>
+      </div>
+    </div>
+
+    <div id="reportCharts" style="display:none">
+      <div class="per-person-box" id="perPersonBox">
+        <div class="label" data-i18n="costPerPerson">Custo por pessoa (media mensal)</div>
+        <div class="value" id="perPersonValue">--</div>
+      </div>
+
+      <div class="totals-row" id="totalsRow">
+        <div class="total-item"><div class="total-label" data-i18n="electricity2">Luz</div><div class="total-value" id="totalLuz" style="color:#f59e0b">--</div></div>
+        <div class="total-item"><div class="total-label" data-i18n="water2">Agua</div><div class="total-value" id="totalAgua" style="color:#3b82f6">--</div></div>
+        <div class="total-item"><div class="total-label" data-i18n="gas2">Gas</div><div class="total-value" id="totalGas" style="color:#ef4444">--</div></div>
+        <div class="total-item"><div class="total-label">Total</div><div class="total-value" id="totalGeral">--</div></div>
+      </div>
+
+      <div class="chart-box">
+        <div class="report-title" data-i18n="monthlyComparison">Comparativo Mensal (EUR)</div>
+        <canvas id="chartBar"></canvas>
+      </div>
+
+      <div class="chart-box">
+        <div class="report-title" data-i18n="monthlyTotal">Total Mensal (EUR)</div>
+        <canvas id="chartLine"></canvas>
+      </div>
+
+      <div class="chart-box">
+        <div class="report-title" data-i18n="distribution">Distribuicao por Tipo</div>
+        <canvas id="chartPie"></canvas>
+      </div>
+
+      <button class="btn btn-purple" onclick="exportPDF()" style="margin-top:8px">
+        <svg width="18" height="18" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        <span data-i18n="exportPDF">Exportar PDF</span>
+      </button>
+      <button class="btn btn-outline" onclick="exportBackup()" style="margin-top:8px">
+        <span data-i18n="exportBackup">Exportar Backup (JSON)</span>
+      </button>
+      <button class="btn btn-outline" onclick="document.getElementById('importFile').click()" style="margin-top:8px">
+        <span data-i18n="importBackup">Importar Backup</span>
+      </button>
+      <input type="file" id="importFile" accept=".json" style="display:none" onchange="importBackup(event)">
+    </div>
+  </div>
+
+  <!-- TOAST -->
+  <div class="toast" id="toast"></div>
+
+  <!-- DELETE MODAL -->
+  <div class="modal-overlay" id="deleteModal">
+    <div class="modal">
+      <h3 data-i18n="confirmDelete">Apagar este registro?</h3>
+      <p id="deleteModalText" style="font-size:14px;color:#666"></p>
+      <div class="modal-actions">
+        <button class="btn btn-outline btn-sm" onclick="closeDeleteModal()"><span data-i18n="cancel">Cancelar</span></button>
+        <button class="btn btn-danger btn-sm" onclick="confirmDelete()"><span data-i18n="delete">Apagar</span></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- BOTTOM NAV -->
+  <nav class="bottom-nav">
+    <button class="nav-btn active" data-screen="home">
+      <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      <span data-i18n="navHome">Inicio</span>
+    </button>
+    <button class="nav-btn" data-screen="novo">
+      <svg viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+      <span data-i18n="navRegister">Registrar</span>
+    </button>
+    <button class="nav-btn" data-screen="historico">
+      <svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+      <span data-i18n="navHistory">Historico</span>
+    </button>
+    <button class="nav-btn" data-screen="relatorio">
+      <svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      <span data-i18n="navReport">Relatorio</span>
+    </button>
+  </nav>
+</div>
+
+<script>
+// =============================================
+// DATABASE (Dexie.js + IndexedDB)
+// =============================================
+const db = new Dexie('ContasCasaDB');
+db.version(1).stores({
+  records: '++id, month, luz, agua, gas, status, moradores, createdAt'
+});
+
+// Request persistent storage
+if (navigator.storage && navigator.storage.persist) {
+  navigator.storage.persist().then(granted => {
+    if (granted) console.log('Storage persistent');
+  });
+}
+
+// =============================================
+// i18n — TRANSLATIONS
+// =============================================
+const LANG = {
+  pt: {
+    newRecord:'Novo Registro', tapToRecord:'Toque para gravar', recording:'Gravando... toque para parar',
+    audioHint:'"Luz 85 euros, agua 42,50, gas 63,10"', audioUnsupported:'Reconhecimento de voz nao disponivel. Use os campos abaixo.',
+    understood:'Entendi:', electricity:'Luz (EUR)', water:'Agua (EUR)', gas:'Gas (EUR)',
+    invoiceMonth:'Mes da fatura', status:'Status', residents:'Moradores', save:'Salvar Registro',
+    paid:'Pago', pending:'Pendente', language:'Idioma',
+    navHome:'Inicio', navRegister:'Registrar', navHistory:'Historico', navReport:'Relatorio',
+    costPerPerson:'Custo por pessoa (media mensal)', monthlyComparison:'Comparativo Mensal (EUR)',
+    monthlyTotal:'Total Mensal (EUR)', distribution:'Distribuicao por Tipo',
+    exportPDF:'Exportar PDF', exportBackup:'Exportar Backup (JSON)', importBackup:'Importar Backup',
+    noDataReport:'Registre contas para ver o relatorio', confirmDelete:'Apagar este registro?',
+    cancel:'Cancelar', delete:'Apagar', electricity2:'Luz', water2:'Agua', gas2:'Gas',
+    savedOk:'Registro salvo!', deletedOk:'Registro apagado!', backupOk:'Backup exportado!',
+    importOk:'Backup importado!', importFail:'Erro ao importar backup.', noData:'Nenhum registro ainda',
+    lastRecord:'Ultimo registro', welcome:'Contas da Casa',
+    months:['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'],
+    speechLang:'pt-PT',
+  },
+  es: {
+    newRecord:'Nuevo Registro', tapToRecord:'Toca para grabar', recording:'Grabando... toca para parar',
+    audioHint:'"Luz 85 euros, agua 42,50, gas 63,10"', audioUnsupported:'Reconocimiento de voz no disponible. Use los campos abajo.',
+    understood:'Entendi:', electricity:'Luz (EUR)', water:'Agua (EUR)', gas:'Gas (EUR)',
+    invoiceMonth:'Mes de factura', status:'Estado', residents:'Habitantes', save:'Guardar Registro',
+    paid:'Pagado', pending:'Pendiente', language:'Idioma',
+    navHome:'Inicio', navRegister:'Registrar', navHistory:'Historial', navReport:'Informe',
+    costPerPerson:'Coste por persona (media mensual)', monthlyComparison:'Comparativo Mensual (EUR)',
+    monthlyTotal:'Total Mensual (EUR)', distribution:'Distribucion por Tipo',
+    exportPDF:'Exportar PDF', exportBackup:'Exportar Backup (JSON)', importBackup:'Importar Backup',
+    noDataReport:'Registre cuentas para ver el informe', confirmDelete:'Borrar este registro?',
+    cancel:'Cancelar', delete:'Borrar', electricity2:'Luz', water2:'Agua', gas2:'Gas',
+    savedOk:'Registro guardado!', deletedOk:'Registro borrado!', backupOk:'Backup exportado!',
+    importOk:'Backup importado!', importFail:'Error al importar backup.', noData:'Ningun registro aun',
+    lastRecord:'Ultimo registro', welcome:'Cuentas de Casa',
+    months:['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'],
+    speechLang:'es-ES',
+  },
+  it: {
+    newRecord:'Nuovo Registro', tapToRecord:'Tocca per registrare', recording:'Registrando... tocca per fermare',
+    audioHint:'"Luce 85 euro, acqua 42,50, gas 63,10"', audioUnsupported:'Riconoscimento vocale non disponibile. Usa i campi sotto.',
+    understood:'Capito:', electricity:'Luce (EUR)', water:'Acqua (EUR)', gas:'Gas (EUR)',
+    invoiceMonth:'Mese fattura', status:'Stato', residents:'Abitanti', save:'Salva Registro',
+    paid:'Pagato', pending:'In attesa', language:'Lingua',
+    navHome:'Inizio', navRegister:'Registra', navHistory:'Storico', navReport:'Report',
+    costPerPerson:'Costo per persona (media mensile)', monthlyComparison:'Confronto Mensile (EUR)',
+    monthlyTotal:'Totale Mensile (EUR)', distribution:'Distribuzione per Tipo',
+    exportPDF:'Esporta PDF', exportBackup:'Esporta Backup (JSON)', importBackup:'Importa Backup',
+    noDataReport:'Registra bollette per vedere il report', confirmDelete:'Eliminare questo registro?',
+    cancel:'Annulla', delete:'Elimina', electricity2:'Luce', water2:'Acqua', gas2:'Gas',
+    savedOk:'Registro salvato!', deletedOk:'Registro eliminato!', backupOk:'Backup esportato!',
+    importOk:'Backup importato!', importFail:'Errore importazione backup.', noData:'Nessun registro ancora',
+    lastRecord:'Ultimo registro', welcome:'Bollette di Casa',
+    months:['Gen','Feb','Mar','Apr','Mag','Giu','Lug','Ago','Set','Ott','Nov','Dic'],
+    speechLang:'it-IT',
+  }
+};
+
+let currentLang = localStorage.getItem('contasCasaLang') || 'pt';
+
+function t(key) { return LANG[currentLang][key] || LANG.pt[key] || key; }
+
+function applyLang() {
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    if (t(key)) el.textContent = t(key);
+  });
+  // Update select options
+  const statusSel = document.getElementById('inputStatus');
+  if (statusSel) {
+    statusSel.options[0].textContent = t('paid');
+    statusSel.options[1].textContent = t('pending');
+  }
+  // Update lang buttons
+  document.querySelectorAll('.lang-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.lang === currentLang);
+  });
+  document.getElementById('welcomeMsg').textContent = t('welcome');
+}
+
+// Lang button clicks
+document.querySelectorAll('.lang-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    currentLang = btn.dataset.lang;
+    localStorage.setItem('contasCasaLang', currentLang);
+    applyLang();
+    refreshHome();
+    refreshHistory();
+    refreshReport();
+  });
+});
+
+// =============================================
+// NAVIGATION
+// =============================================
+let currentScreen = 'home';
+
+function goTo(screen) {
+  currentScreen = screen;
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-' + screen).classList.add('active');
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  const navBtn = document.querySelector(`.nav-btn[data-screen="${screen}"]`);
+  if (navBtn) navBtn.classList.add('active');
+
+  if (screen === 'novo') prepareForm();
+  if (screen === 'historico') refreshHistory();
+  if (screen === 'relatorio') refreshReport();
+  if (screen === 'home') refreshHome();
+}
+
+document.querySelectorAll('.nav-btn').forEach(btn => {
+  btn.addEventListener('click', () => goTo(btn.dataset.screen));
+});
+
+// =============================================
+// SPEECH RECOGNITION
+// =============================================
+const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+let recognition = null;
+let isRecording = false;
+
+if (SpeechRecognition) {
+  recognition = new SpeechRecognition();
+  recognition.continuous = true;
+  recognition.interimResults = true;
+
+  recognition.onresult = (event) => {
+    let transcript = '';
+    for (let i = 0; i < event.results.length; i++) {
+      transcript += event.results[i][0].transcript;
+    }
+    document.getElementById('transcriptText').textContent = transcript;
+    document.getElementById('transcriptBox').classList.add('show');
+    parseTranscript(transcript);
+  };
+
+  recognition.onerror = (event) => {
+    console.error('Speech error:', event.error);
+    stopRecording();
+  };
+
+  recognition.onend = () => {
+    if (isRecording) stopRecording();
+  };
+} else {
+  document.getElementById('audioArea').style.display = 'none';
+  document.getElementById('audioUnsupported').style.display = 'block';
+}
+
+function toggleRecording() {
+  if (!recognition) return;
+  if (isRecording) {
+    stopRecording();
+  } else {
+    startRecording();
+  }
+}
+
+function startRecording() {
+  isRecording = true;
+  recognition.lang = LANG[currentLang].speechLang;
+  recognition.start();
+  document.getElementById('audioArea').classList.add('recording');
+  document.getElementById('audioText').textContent = t('recording');
+}
+
+function stopRecording() {
+  isRecording = false;
+  try { recognition.stop(); } catch(e) {}
+  document.getElementById('audioArea').classList.remove('recording');
+  document.getElementById('audioText').textContent = t('tapToRecord');
+}
+
+// =============================================
+// PARSE TRANSCRIPT → FILL FIELDS
+// =============================================
+function parseTranscript(text) {
+  const lower = text.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+
+  // Keywords per language
+  const keywords = {
+    luz: ['luz', 'luce', 'electricidad', 'elettricita', 'eletricidade', 'light'],
+    agua: ['agua', 'acqua', 'eau', 'water'],
+    gas: ['gas', 'gaz']
+  };
+
+  // Extract number after keyword
+  function findValueAfter(text, keys) {
+    for (const key of keys) {
+      // Match: keyword + optional words + number
+      const regex = new RegExp(key + '[\\s\\w]{0,20}?(\\d+[,.]?\\d*)', 'i');
+      const match = text.match(regex);
+      if (match) {
+        return parseFloat(match[1].replace(',', '.'));
+      }
+    }
+    return null;
+  }
+
+  const luz = findValueAfter(lower, keywords.luz);
+  const agua = findValueAfter(lower, keywords.agua);
+  const gas = findValueAfter(lower, keywords.gas);
+
+  if (luz !== null) document.getElementById('inputLuz').value = luz;
+  if (agua !== null) document.getElementById('inputAgua').value = agua;
+  if (gas !== null) document.getElementById('inputGas').value = gas;
+
+  // Detect paid/pending
+  if (lower.includes('pago') || lower.includes('pagado') || lower.includes('pagato') || lower.includes('paga')) {
+    document.getElementById('inputStatus').value = 'pago';
+  } else if (lower.includes('pendente') || lower.includes('pendiente') || lower.includes('attesa')) {
+    document.getElementById('inputStatus').value = 'pendente';
+  }
+}
+
+// =============================================
+// FORM
+// =============================================
+function prepareForm() {
+  const now = new Date();
+  const monthStr = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
+  document.getElementById('inputMonth').value = monthStr;
+  // Reset fields
+  document.getElementById('inputLuz').value = '';
+  document.getElementById('inputAgua').value = '';
+  document.getElementById('inputGas').value = '';
+  document.getElementById('inputStatus').value = 'pago';
+  document.getElementById('transcriptBox').classList.remove('show');
+}
+
+async function saveRecord() {
+  const luz = parseFloat(document.getElementById('inputLuz').value) || 0;
+  const agua = parseFloat(document.getElementById('inputAgua').value) || 0;
+  const gas = parseFloat(document.getElementById('inputGas').value) || 0;
+  const month = document.getElementById('inputMonth').value;
+  const status = document.getElementById('inputStatus').value;
+  const moradores = parseInt(document.getElementById('inputMoradores').value) || 4;
+
+  if (!month) { showToast('Selecione o mes'); return; }
+  if (luz === 0 && agua === 0 && gas === 0) { showToast('Preencha pelo menos um valor'); return; }
+
+  // Check if month already exists
+  const existing = await db.records.where('month').equals(month).first();
+  if (existing) {
+    // Update existing
+    await db.records.update(existing.id, { luz, agua, gas, status, moradores, createdAt: new Date().toISOString() });
+  } else {
+    await db.records.add({ month, luz, agua, gas, status, moradores, createdAt: new Date().toISOString() });
+  }
+
+  showToast(t('savedOk'));
+  setTimeout(() => goTo('home'), 800);
+}
+
+// =============================================
+// HOME SCREEN
+// =============================================
+async function refreshHome() {
+  const records = await db.records.orderBy('month').reverse().toArray();
+  const sub = document.getElementById('headerSub');
+  const summary = document.getElementById('homeSummary');
+  const welcomeSub = document.getElementById('welcomeSub');
+
+  if (records.length === 0) {
+    welcomeSub.textContent = t('noData');
+    sub.textContent = '';
+    summary.innerHTML = '';
+    return;
+  }
+
+  const last = records[0];
+  const monthLabel = formatMonth(last.month);
+  welcomeSub.textContent = t('lastRecord') + ': ' + monthLabel;
+  sub.textContent = records.length + ' registros';
+
+  const total = (last.luz + last.agua + last.gas).toFixed(2);
+  summary.innerHTML = `
+    <div class="card card-luz"><div class="card-row"><div><div class="card-label">${t('electricity2')}</div><div class="card-sub">${monthLabel}</div></div><div class="card-value">${last.luz.toFixed(2)} EUR</div></div></div>
+    <div class="card card-agua"><div class="card-row"><div><div class="card-label">${t('water2')}</div><div class="card-sub">${monthLabel}</div></div><div class="card-value">${last.agua.toFixed(2)} EUR</div></div></div>
+    <div class="card card-gas"><div class="card-row"><div><div class="card-label">${t('gas2')}</div><div class="card-sub">${monthLabel}</div></div><div class="card-value">${last.gas.toFixed(2)} EUR</div></div></div>
+    <div class="card"><div class="card-row"><div><div class="card-label">Total</div></div><div class="card-value" style="color:#2563eb">${total} EUR</div></div></div>
+  `;
+}
+
+// =============================================
+// HISTORY SCREEN
+// =============================================
+let deleteTargetId = null;
+
+async function refreshHistory() {
+  const records = await db.records.orderBy('month').reverse().toArray();
+  const list = document.getElementById('historyList');
+
+  if (records.length === 0) {
+    list.innerHTML = `<div class="empty-state"><svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg><p>${t('noData')}</p></div>`;
+    return;
+  }
+
+  list.innerHTML = records.map(r => {
+    const total = (r.luz + r.agua + r.gas).toFixed(2);
+    const badgeClass = r.status === 'pago' ? 'badge-pago' : 'badge-pendente';
+    const badgeText = r.status === 'pago' ? t('paid') : t('pending');
+    return `
+      <div class="history-item" onclick="openDeleteModal(${r.id}, '${formatMonth(r.month)}')">
+        <div>
+          <div class="history-date">${formatMonth(r.month)}</div>
+          <div class="history-detail">L: ${r.luz.toFixed(2)} | A: ${r.agua.toFixed(2)} | G: ${r.gas.toFixed(2)}</div>
+        </div>
+        <div style="text-align:right">
+          <div class="history-total">${total} EUR</div>
+          <span class="badge ${badgeClass}">${badgeText}</span>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function openDeleteModal(id, monthLabel) {
+  deleteTargetId = id;
+  document.getElementById('deleteModalText').textContent = monthLabel;
+  document.getElementById('deleteModal').classList.add('show');
+}
+function closeDeleteModal() {
+  deleteTargetId = null;
+  document.getElementById('deleteModal').classList.remove('show');
+}
+async function confirmDelete() {
+  if (deleteTargetId) {
+    await db.records.delete(deleteTargetId);
+    showToast(t('deletedOk'));
+  }
+  closeDeleteModal();
+  refreshHistory();
+}
+
+// =============================================
+// REPORT SCREEN + CHARTS
+// =============================================
+let chartBar = null, chartLine = null, chartPie = null;
+
+async function refreshReport() {
+  const records = await db.records.orderBy('month').toArray();
+  const empty = document.getElementById('reportEmpty');
+  const charts = document.getElementById('reportCharts');
+
+  if (records.length === 0) {
+    empty.style.display = 'block';
+    charts.style.display = 'none';
+    return;
+  }
+  empty.style.display = 'none';
+  charts.style.display = 'block';
+
+  // Calculate totals
+  let sumLuz = 0, sumAgua = 0, sumGas = 0;
+  records.forEach(r => { sumLuz += r.luz; sumAgua += r.agua; sumGas += r.gas; });
+  const sumTotal = sumLuz + sumAgua + sumGas;
+  const avgMoradores = records.reduce((s, r) => s + r.moradores, 0) / records.length;
+  const perPerson = (sumTotal / records.length / avgMoradores).toFixed(2);
+
+  document.getElementById('totalLuz').textContent = sumLuz.toFixed(2);
+  document.getElementById('totalAgua').textContent = sumAgua.toFixed(2);
+  document.getElementById('totalGas').textContent = sumGas.toFixed(2);
+  document.getElementById('totalGeral').textContent = sumTotal.toFixed(2);
+  document.getElementById('perPersonValue').textContent = perPerson + ' EUR';
+  document.getElementById('perPersonBox').querySelector('.label').textContent =
+    t('costPerPerson') + ' (' + Math.round(avgMoradores) + ')';
+
+  // Chart data
+  const labels = records.map(r => formatMonthShort(r.month));
+  const dataLuz = records.map(r => r.luz);
+  const dataAgua = records.map(r => r.agua);
+  const dataGas = records.map(r => r.gas);
+  const dataTotals = records.map(r => r.luz + r.agua + r.gas);
+
+  // Destroy old charts
+  if (chartBar) chartBar.destroy();
+  if (chartLine) chartLine.destroy();
+  if (chartPie) chartPie.destroy();
+
+  // Bar chart
+  chartBar = new Chart(document.getElementById('chartBar'), {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        { label: t('electricity2'), data: dataLuz, backgroundColor: '#f59e0b', borderRadius: 4 },
+        { label: t('water2'), data: dataAgua, backgroundColor: '#3b82f6', borderRadius: 4 },
+        { label: t('gas2'), data: dataGas, backgroundColor: '#ef4444', borderRadius: 4 },
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: true,
+      plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } } },
+      scales: { y: { beginAtZero: true, ticks: { font: { size: 10 } } }, x: { ticks: { font: { size: 10 } } } }
+    }
+  });
+
+  // Line chart
+  chartLine = new Chart(document.getElementById('chartLine'), {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [{
+        label: 'Total', data: dataTotals,
+        borderColor: '#2563eb', backgroundColor: 'rgba(37,99,235,0.1)',
+        fill: true, tension: 0.3, pointRadius: 5, pointBackgroundColor: '#2563eb'
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: true,
+      plugins: { legend: { display: false } },
+      scales: { y: { beginAtZero: true, ticks: { font: { size: 10 } } }, x: { ticks: { font: { size: 10 } } } }
+    }
+  });
+
+  // Pie chart
+  chartPie = new Chart(document.getElementById('chartPie'), {
+    type: 'doughnut',
+    data: {
+      labels: [t('electricity2'), t('water2'), t('gas2')],
+      datasets: [{
+        data: [sumLuz, sumAgua, sumGas],
+        backgroundColor: ['#f59e0b', '#3b82f6', '#ef4444'],
+        borderWidth: 0
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: true,
+      plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } } }
+    }
+  });
+}
+
+// =============================================
+// PDF EXPORT
+// =============================================
+function exportPDF() {
+  const element = document.getElementById('reportCharts');
+  const opt = {
+    margin: 10,
+    filename: 'contas-da-casa.pdf',
+    image: { type: 'jpeg', quality: 0.95 },
+    html2canvas: { scale: 2, useCORS: true },
+    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+  };
+  html2pdf().set(opt).from(element).save();
+}
+
+// =============================================
+// BACKUP EXPORT / IMPORT
+// =============================================
+async function exportBackup() {
+  const records = await db.records.toArray();
+  const data = JSON.stringify({ version: 1, lang: currentLang, records, exportedAt: new Date().toISOString() }, null, 2);
+  const blob = new Blob([data], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'contas-casa-backup-' + new Date().toISOString().slice(0, 10) + '.json';
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast(t('backupOk'));
+}
+
+async function importBackup(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  try {
+    const text = await file.text();
+    const data = JSON.parse(text);
+    if (!data.records || !Array.isArray(data.records)) throw new Error('Invalid');
+    // Clear and re-import
+    await db.records.clear();
+    for (const r of data.records) {
+      await db.records.add({
+        month: r.month, luz: r.luz, agua: r.agua, gas: r.gas,
+        status: r.status, moradores: r.moradores, createdAt: r.createdAt
+      });
+    }
+    showToast(t('importOk'));
+    refreshHome();
+    refreshHistory();
+    refreshReport();
+  } catch (e) {
+    showToast(t('importFail'));
+  }
+  event.target.value = '';
+}
+
+// =============================================
+// UTILITIES
+// =============================================
+function formatMonth(monthStr) {
+  const [y, m] = monthStr.split('-');
+  return t('months')[parseInt(m) - 1] + ' ' + y;
+}
+
+function formatMonthShort(monthStr) {
+  const [y, m] = monthStr.split('-');
+  return t('months')[parseInt(m) - 1] + ' ' + y.slice(2);
+}
+
+function showToast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 2200);
+}
+
+// =============================================
+// INIT
+// =============================================
+applyLang();
+refreshHome();
+prepareForm();
+</script>
+</body>
+</html>
