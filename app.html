@@ -95,7 +95,7 @@
 <body>
 <div id="app">
   <header class="hdr">
-    <div class="hdr-t">🏠 <span id="appTitle">Bollette di Casa</span><span class="ver">v9</span></div>
+    <div class="hdr-t">🏠 <span id="appTitle">Bollette di Casa</span><span class="ver">v10</span></div>
     <button class="gear" onclick="togSet()"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
   </header>
   <div class="caw" id="caw" onclick="togSet()"></div>
@@ -284,11 +284,10 @@ async function dEdit(){
 }
 
 // ====== REPORT ======
-let chart=null,curTab='bar',moIdx=-1,allMonths=[];
+let chart=null,curTab='bar',moIdx=-1,allMonths=[],allRecs=[],lineFilter='all';
 const TABS=['bar','daily','line','pie','person'];
 
 function navMo(dir){
-  // -1 = all, 0..n = specific months
   moIdx+=dir;
   if(moIdx<-1)moIdx=allMonths.length-1;
   if(moIdx>=allMonths.length)moIdx=-1;
@@ -296,28 +295,25 @@ function navMo(dir){
 }
 
 async function rRep(){
-  const all=await db.records.orderBy('month').toArray();
-  if(!all.length){$('repE').style.display='block';$('repC').style.display='none';return}
+  allRecs=await db.records.orderBy('month').toArray();
+  if(!allRecs.length){$('repE').style.display='block';$('repC').style.display='none';return}
   $('repE').style.display='none';$('repC').style.display='block';
-  allMonths=all.map(r=>r.month);
+  allMonths=allRecs.map(r=>r.month);
+  if(moIdx>=allMonths.length)moIdx=-1;
 
-  // Filter for summary
-  const recs=moIdx===-1?all:[all.find(r=>r.month===allMonths[moIdx])].filter(Boolean);
-  const moLbl=moIdx===-1?t('all'):fMo(allMonths[moIdx]);
-  $('moLabel').textContent=moLbl;
+  // Filtered records for summary + most charts
+  const filt=moIdx===-1?allRecs:[allRecs[moIdx]].filter(Boolean);
+  $('moLabel').textContent=moIdx===-1?t('all'):fMo(allMonths[moIdx]);
 
-  let sL=0,sA=0,sG=0;recs.forEach(r=>{sL+=r.luce;sA+=r.acqua;sG+=r.gas});
-  const sT=sL+sA+sG,avgAb=recs.reduce((s,r)=>s+r.abitanti,0)/recs.length||4;
-  const nMo=recs.length||1;
+  let sL=0,sA=0,sG=0;filt.forEach(r=>{sL+=r.luce;sA+=r.acqua;sG+=r.gas});
+  const sT=sL+sA+sG,avgAb=filt.reduce((s,r)=>s+r.abitanti,0)/filt.length||4,nMo=filt.length||1;
   $('rSumLbl').textContent=t('cpp')+' ('+Math.round(avgAb)+' '+t('ab')+')';
-  $('rPP').textContent=(sT/nMo/avgAb).toFixed(2)+' €/'+t('ab').toLowerCase().slice(0,2);
+  $('rPP').textContent=(sT/nMo/avgAb).toFixed(2)+' €';
   $('rL').textContent=sL.toFixed(2)+'€';$('rA').textContent=sA.toFixed(2)+'€';$('rG').textContent=sG.toFixed(2)+'€';
 
-  // Tabs
   const tn={bar:t('tBar'),daily:t('tDay'),line:t('tLine'),pie:t('tPie'),person:t('tPerson')};
   $('chTabs').innerHTML=TABS.map(tb=>`<button class="ch-tab${tb===curTab?' on':''}" onclick="curTab='${tb}';rRep()">${tn[tb]}</button>`).join('');
-
-  drawCh(all);
+  drawCh(filt);
 }
 
 function drawCh(recs){
@@ -325,7 +321,8 @@ function drawCh(recs){
   const cv=$('chCanvas');
   const labels=recs.map(r=>fMoS(r.month));
   const dL=recs.map(r=>r.luce),dA=recs.map(r=>r.acqua),dG=recs.map(r=>r.gas),dT=recs.map(r=>r.luce+r.acqua+r.gas);
-  const dlOpt={display:ctx=>ctx.dataset.data[ctx.dataIndex]>0,color:'#333',font:{size:9,weight:'bold'},anchor:'end',align:'top',formatter:v=>v.toFixed(0)+'€'};
+  // Labels INSIDE bars: white text, no overlap
+  const dlIn={display:ctx=>ctx.dataset.data[ctx.dataIndex]>0,color:'#fff',font:{size:10,weight:'bold'},anchor:'center',align:'center',formatter:v=>v.toFixed(0)+'€'};
 
   if(curTab==='bar'){
     $('chTit').textContent=t('tBar');
@@ -333,44 +330,56 @@ function drawCh(recs){
       {label:t('luce'),data:dL,backgroundColor:'#f59e0b',borderRadius:4},
       {label:t('acqua'),data:dA,backgroundColor:'#06b6d4',borderRadius:4},
       {label:'Gas',data:dG,backgroundColor:'#f43f5e',borderRadius:4}
-    ]},options:bOpt(dlOpt)});
+    ]},options:bOpt(dlIn)});
   }else if(curTab==='daily'){
+    // LINE chart — daily cost based on period between invoices
+    // Always use ALL records for daily calc (need previous period)
     $('chTit').textContent=t('tDay');
+    const src=allRecs;
     const dyL=[],dyA=[],dyG=[],dyT=[],lb=[];
-    for(let i=1;i<recs.length;i++){
-      const dl=dBt(recs[i-1].luceDate,recs[i].luceDate)||30;
-      const da=dBt(recs[i-1].acquaDate,recs[i].acquaDate)||30;
-      const dg=dBt(recs[i-1].gasDate,recs[i].gasDate)||30;
-      const vl=recs[i].luce?+(recs[i].luce/dl).toFixed(2):0;
-      const va=recs[i].acqua?+(recs[i].acqua/da).toFixed(2):0;
-      const vg=recs[i].gas?+(recs[i].gas/dg).toFixed(2):0;
-      dyL.push(vl);dyA.push(va);dyG.push(vg);dyT.push(+(vl+va+vg).toFixed(2));lb.push(labels[i]);
+    for(let i=1;i<src.length;i++){
+      const dl=dBt(src[i-1].luceDate,src[i].luceDate)||30;
+      const da=dBt(src[i-1].acquaDate,src[i].acquaDate)||30;
+      const dg=dBt(src[i-1].gasDate,src[i].gasDate)||30;
+      const vl=src[i].luce?+(src[i].luce/dl).toFixed(2):0;
+      const va=src[i].acqua?+(src[i].acqua/da).toFixed(2):0;
+      const vg=src[i].gas?+(src[i].gas/dg).toFixed(2):0;
+      dyL.push(vl);dyA.push(va);dyG.push(vg);dyT.push(+(vl+va+vg).toFixed(2));
+      lb.push(fMoS(src[i].month));
     }
-    const dlDay={...dlOpt,formatter:v=>v>0?v.toFixed(2)+'€':''};
-    chart=new Chart(cv,{type:'bar',data:{labels:lb,datasets:[
-      {label:t('luce'),data:dyL,backgroundColor:'rgba(245,158,11,.7)',borderRadius:4},
-      {label:t('acqua'),data:dyA,backgroundColor:'rgba(6,182,212,.7)',borderRadius:4},
-      {label:'Gas',data:dyG,backgroundColor:'rgba(244,63,94,.7)',borderRadius:4},
-      {label:'Total',data:dyT,type:'line',borderColor:'#6366f1',borderWidth:2,pointRadius:4,pointBackgroundColor:'#6366f1',fill:false,tension:.3,datalabels:{color:'#6366f1',anchor:'end',align:'top',formatter:v=>v.toFixed(2)+'€'}}
-    ]},options:bOpt(dlDay)});
-  }else if(curTab==='line'){
-    $('chTit').textContent=t('tLine');
-    const dlLine={display:ctx=>ctx.dataset.data[ctx.dataIndex]>0,font:{size:9,weight:'bold'},anchor:'end',align:'top',formatter:v=>v.toFixed(0)+'€'};
-    chart=new Chart(cv,{type:'line',data:{labels,datasets:[
-      {label:'Total',data:dT,borderColor:'#6366f1',backgroundColor:'rgba(99,102,241,.1)',fill:true,tension:.3,pointRadius:4,borderWidth:2.5,datalabels:{color:'#6366f1',...dlLine}},
-      {label:t('luce'),data:dL,borderColor:'#f59e0b',borderWidth:1.5,pointRadius:3,tension:.3,fill:false,datalabels:{color:'#f59e0b',...dlLine}},
-      {label:t('acqua'),data:dA,borderColor:'#06b6d4',borderWidth:1.5,pointRadius:3,tension:.3,fill:false,datalabels:{color:'#06b6d4',...dlLine}},
-      {label:'Gas',data:dG,borderColor:'#f43f5e',borderWidth:1.5,pointRadius:3,tension:.3,fill:false,datalabels:{color:'#f43f5e',...dlLine}}
+    const dlDay={display:ctx=>ctx.dataset.data[ctx.dataIndex]>0,font:{size:9,weight:'bold'},anchor:'end',align:'top',formatter:v=>v.toFixed(2)+'€'};
+    chart=new Chart(cv,{type:'line',data:{labels:lb,datasets:[
+      {label:t('luce'),data:dyL,borderColor:'#f59e0b',backgroundColor:'rgba(245,158,11,.1)',borderWidth:2.5,pointRadius:5,pointBackgroundColor:'#f59e0b',tension:.3,fill:false,datalabels:{color:'#f59e0b',...dlDay}},
+      {label:t('acqua'),data:dyA,borderColor:'#06b6d4',backgroundColor:'rgba(6,182,212,.1)',borderWidth:2.5,pointRadius:5,pointBackgroundColor:'#06b6d4',tension:.3,fill:false,datalabels:{color:'#06b6d4',...dlDay}},
+      {label:'Gas',data:dyG,borderColor:'#f43f5e',backgroundColor:'rgba(244,63,94,.1)',borderWidth:2.5,pointRadius:5,pointBackgroundColor:'#f43f5e',tension:.3,fill:false,datalabels:{color:'#f43f5e',...dlDay}},
+      {label:'Total',data:dyT,borderColor:'#6366f1',borderWidth:3,pointRadius:6,pointBackgroundColor:'#6366f1',tension:.3,fill:true,backgroundColor:'rgba(99,102,241,.08)',datalabels:{color:'#6366f1',font:{size:10,weight:'bold'},anchor:'end',align:'top',formatter:v=>v.toFixed(2)+'€'}}
     ]},options:bOpt({display:false})});
+  }else if(curTab==='line'){
+    // Andamento — always all records, with filter buttons
+    const fBtns=['all','luce','acqua','gas'].map(f=>{
+      const lb={'all':t('all'),'luce':t('luce'),'acqua':t('acqua'),'gas':'Gas'}[f];
+      const cl=f===lineFilter?'on':'';
+      return `<button class="ch-tab ${cl}" style="padding:4px 10px;font-size:10px" onclick="lineFilter='${f}';rRep()">${lb}</button>`;
+    }).join('');
+    $('chTit').innerHTML=t('tLine')+' <span style="float:right;display:flex;gap:3px">'+fBtns+'</span>';
+    const src=allRecs,lb2=src.map(r=>fMoS(r.month));
+    const aL=src.map(r=>r.luce),aA=src.map(r=>r.acqua),aG=src.map(r=>r.gas),aT=src.map(r=>r.luce+r.acqua+r.gas);
+    const dlL={display:ctx=>ctx.dataset.data[ctx.dataIndex]>0,font:{size:9,weight:'bold'},anchor:'end',align:'top',formatter:v=>v.toFixed(0)+'€'};
+    const ds=[];
+    if(lineFilter==='all'||lineFilter==='luce')ds.push({label:t('luce'),data:aL,borderColor:'#f59e0b',borderWidth:2.5,pointRadius:5,pointBackgroundColor:'#f59e0b',tension:.3,fill:lineFilter==='luce',backgroundColor:'rgba(245,158,11,.1)',datalabels:{color:'#f59e0b',...dlL}});
+    if(lineFilter==='all'||lineFilter==='acqua')ds.push({label:t('acqua'),data:aA,borderColor:'#06b6d4',borderWidth:2.5,pointRadius:5,pointBackgroundColor:'#06b6d4',tension:.3,fill:lineFilter==='acqua',backgroundColor:'rgba(6,182,212,.1)',datalabels:{color:'#06b6d4',...dlL}});
+    if(lineFilter==='all'||lineFilter==='gas')ds.push({label:'Gas',data:aG,borderColor:'#f43f5e',borderWidth:2.5,pointRadius:5,pointBackgroundColor:'#f43f5e',tension:.3,fill:lineFilter==='gas',backgroundColor:'rgba(244,63,94,.1)',datalabels:{color:'#f43f5e',...dlL}});
+    if(lineFilter==='all')ds.unshift({label:'Total',data:aT,borderColor:'#6366f1',backgroundColor:'rgba(99,102,241,.1)',fill:true,tension:.3,pointRadius:5,borderWidth:2.5,datalabels:{color:'#6366f1',...dlL}});
+    chart=new Chart(cv,{type:'line',data:{labels:lb2,datasets:ds},options:bOpt({display:false})});
   }else if(curTab==='pie'){
     $('chTit').textContent=t('tPie');
     let sL=0,sA=0,sG=0;recs.forEach(r=>{sL+=r.luce;sA+=r.acqua;sG+=r.gas});
-    chart=new Chart(cv,{type:'doughnut',data:{labels:[t('luce'),t('acqua'),'Gas'],datasets:[{data:[sL,sA,sG],backgroundColor:['#f59e0b','#06b6d4','#f43f5e'],borderWidth:0,spacing:2}]},options:{responsive:true,maintainAspectRatio:true,cutout:'60%',plugins:{legend:{position:'bottom',labels:{boxWidth:10,font:{size:11}}},datalabels:{color:'#fff',font:{size:12,weight:'bold'},formatter:(v,ctx)=>{const sum=ctx.dataset.data.reduce((a,b)=>a+b,0);return sum?Math.round(v/sum*100)+'%':''}}}},plugins:[ChartDataLabels]});return;
+    const tot=sL+sA+sG;
+    chart=new Chart(cv,{type:'doughnut',data:{labels:[t('luce')+' '+sL.toFixed(0)+'€',t('acqua')+' '+sA.toFixed(0)+'€','Gas '+sG.toFixed(0)+'€'],datasets:[{data:[sL,sA,sG],backgroundColor:['#f59e0b','#06b6d4','#f43f5e'],borderWidth:0,spacing:2}]},options:{responsive:true,maintainAspectRatio:true,cutout:'60%',plugins:{legend:{position:'bottom',labels:{boxWidth:12,font:{size:11}}},datalabels:{color:'#fff',font:{size:13,weight:'bold'},formatter:(v,ctx)=>{const sum=ctx.dataset.data.reduce((a,b)=>a+b,0);return sum?Math.round(v/sum*100)+'%':''}}}},plugins:[ChartDataLabels]});return;
   }else if(curTab==='person'){
     $('chTit').textContent=t('tPerson');
     const pp=recs.map(r=>+((r.luce+r.acqua+r.gas)/r.abitanti).toFixed(2));
-    const dlP={...dlOpt,formatter:v=>v.toFixed(2)+'€'};
-    chart=new Chart(cv,{type:'bar',data:{labels,datasets:[{label:t('tPerson'),data:pp,backgroundColor:'rgba(99,102,241,.7)',borderRadius:4}]},options:bOpt(dlP)});
+    chart=new Chart(cv,{type:'bar',data:{labels,datasets:[{label:t('tPerson'),data:pp,backgroundColor:'rgba(99,102,241,.7)',borderRadius:4}]},options:bOpt(dlIn)});
   }
 }
 
