@@ -281,8 +281,9 @@ function navMo(dir){
   moIdx+=dir;
   if(moIdx<0)moIdx=allMonths.length-1;
   if(moIdx>=allMonths.length)moIdx=0;
-  // When user navigates months, switch all charts off Tutti so they show that month
-  barAll=false;lineAll=false;pieAll=false;personAll=false;
+  // When user navigates months, switch other charts off Tutti to show that month
+  // (Andamento always stays in timeline mode)
+  barAll=false;pieAll=false;personAll=false;
   rRep();
 }
 
@@ -386,8 +387,9 @@ function drawCh(){
       return ctx=>show.has(ctx.dataIndex);
     }
 
-    // Build buttons: utility filters + Tutti scope toggle
-    const allBtns='<span style="display:flex;gap:3px;flex-wrap:wrap">'+fBtns+tBtn('line',lineAll)+'</span>';
+    // Andamento always shows the full timeline (no Tutti toggle)
+    lineAll=true;
+    const allBtns='<span style="display:flex;gap:3px;flex-wrap:wrap">'+fBtns+'</span>';
     const pL=periodsFor('luce','luceDate'),pA=periodsFor('acqua','acquaDate'),pG=periodsFor('gas','gasDate');
 
     // Per-dataset offset to avoid label collisions: Luce up, Acqua middle, Gas down
