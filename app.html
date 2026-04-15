@@ -320,21 +320,68 @@ function drawCh(recs){
       {label:'Gas',data:dG,backgroundColor:'#f43f5e',borderRadius:4}
     ]},options:bOpt(dlIn)});
   }else if(curTab==='line'){
-    // Andamento — always all records, filter: Luce/Acqua/Gas (no Tutti)
+    // Filter buttons
     const fBtns=['all3','luce','acqua','gas'].map(f=>{
       const lb={'all3':'⚡💧🔥','luce':t('luce'),'acqua':t('acqua'),'gas':'Gas'}[f];
       const cl=f===lineFilter?'on':'';
       return `<button class="ch-tab ${cl}" style="padding:4px 10px;font-size:10px" onclick="lineFilter='${f}';rRep()">${lb}</button>`;
     }).join('');
-    $('chTit').innerHTML=t('tLine')+' <span style="float:right;display:flex;gap:3px">'+fBtns+'</span>';
-    const src=allRecs,lb2=src.map(r=>fMoS(r.month));
-    const aL=src.map(r=>r.luce),aA=src.map(r=>r.acqua),aG=src.map(r=>r.gas);
-    const dlL={display:ctx=>ctx.dataset.data[ctx.dataIndex]>0,font:{size:9,weight:'bold'},anchor:'end',align:'top',formatter:v=>v.toFixed(0)+'€'};
-    const ds=[];
-    if(lineFilter==='all3'||lineFilter==='luce')ds.push({label:t('luce'),data:aL,borderColor:'#f59e0b',borderWidth:2.5,pointRadius:5,pointBackgroundColor:'#f59e0b',tension:.3,fill:lineFilter==='luce',backgroundColor:'rgba(245,158,11,.1)',datalabels:{color:'#f59e0b',...dlL}});
-    if(lineFilter==='all3'||lineFilter==='acqua')ds.push({label:t('acqua'),data:aA,borderColor:'#06b6d4',borderWidth:2.5,pointRadius:5,pointBackgroundColor:'#06b6d4',tension:.3,fill:lineFilter==='acqua',backgroundColor:'rgba(6,182,212,.1)',datalabels:{color:'#06b6d4',...dlL}});
-    if(lineFilter==='all3'||lineFilter==='gas')ds.push({label:'Gas',data:aG,borderColor:'#f43f5e',borderWidth:2.5,pointRadius:5,pointBackgroundColor:'#f43f5e',tension:.3,fill:lineFilter==='gas',backgroundColor:'rgba(244,63,94,.1)',datalabels:{color:'#f43f5e',...dlL}});
-    chart=new Chart(cv,{type:'line',data:{labels:lb2,datasets:ds},options:bOpt({display:false})});
+
+    if(moIdx===-1){
+      // "Tutti" selected — monthly trend lines (all months)
+      $('chTit').innerHTML=t('tLine')+' <span style="float:right;display:flex;gap:3px">'+fBtns+'</span>';
+      const src=allRecs,lb2=src.map(r=>fMoS(r.month));
+      const aL=src.map(r=>r.luce),aA=src.map(r=>r.acqua),aG=src.map(r=>r.gas);
+      const dlL={display:ctx=>ctx.dataset.data[ctx.dataIndex]>0,font:{size:9,weight:'bold'},anchor:'end',align:'top',formatter:v=>v.toFixed(0)+'€'};
+      const ds=[];
+      if(lineFilter==='all3'||lineFilter==='luce')ds.push({label:t('luce'),data:aL,borderColor:'#f59e0b',borderWidth:2.5,pointRadius:5,pointBackgroundColor:'#f59e0b',tension:.3,fill:lineFilter==='luce',backgroundColor:'rgba(245,158,11,.1)',datalabels:{color:'#f59e0b',...dlL}});
+      if(lineFilter==='all3'||lineFilter==='acqua')ds.push({label:t('acqua'),data:aA,borderColor:'#06b6d4',borderWidth:2.5,pointRadius:5,pointBackgroundColor:'#06b6d4',tension:.3,fill:lineFilter==='acqua',backgroundColor:'rgba(6,182,212,.1)',datalabels:{color:'#06b6d4',...dlL}});
+      if(lineFilter==='all3'||lineFilter==='gas')ds.push({label:'Gas',data:aG,borderColor:'#f43f5e',borderWidth:2.5,pointRadius:5,pointBackgroundColor:'#f43f5e',tension:.3,fill:lineFilter==='gas',backgroundColor:'rgba(244,63,94,.1)',datalabels:{color:'#f43f5e',...dlL}});
+      chart=new Chart(cv,{type:'line',data:{labels:lb2,datasets:ds},options:bOpt({display:false})});
+    }else{
+      // Specific month selected — daily step chart (€/day for each day of the month)
+      const mo=allMonths[moIdx];
+      const [y,m]=mo.split('-').map(Number);
+      const daysInMo=new Date(y,m,0).getDate();
+      const days=Array.from({length:daysInMo},(_,i)=>(i+1)+'');
+      $('chTit').innerHTML=fMo(mo)+' — €/giorno <span style="float:right;display:flex;gap:3px">'+fBtns+'</span>';
+
+      // Compute daily cost for each day based on which invoice period covers it
+      function dailyFor(util,dateKey){
+        const sorted=allRecs.filter(r=>r[dateKey]&&r[util]).map(r=>({v:r[util],d:r[dateKey]})).sort((a,b)=>a.d.localeCompare(b.d));
+        return days.map(day=>{
+          const date=new Date(y,m-1,parseInt(day));
+          for(let i=0;i<sorted.length;i++){
+            const invDate=new Date(sorted[i].d);
+            const prevDate=i>0?new Date(sorted[i-1].d):null;
+            if(date<=invDate&&(!prevDate||date>prevDate)){
+              const period=prevDate?Math.round((invDate-prevDate)/864e5):30;
+              return period>0?+(sorted[i].v/period).toFixed(3):null;
+            }
+          }
+          return null;
+        });
+      }
+      // Only label at midpoint of each constant-value range (once per "level")
+      function midLabels(data){
+        const show=new Set();
+        let s=0;
+        for(let i=1;i<=data.length;i++){
+          if(i===data.length||data[i]!==data[s]){
+            if(data[s]!=null)show.add(Math.floor((s+i-1)/2));
+            s=i;
+          }
+        }
+        return ctx=>show.has(ctx.dataIndex);
+      }
+      const dL=dailyFor('luce','luceDate'),dA=dailyFor('acqua','acquaDate'),dG=dailyFor('gas','gasDate');
+      const mkDs=(lb,data,col,colBg)=>({label:lb,data,borderColor:col,backgroundColor:colBg,borderWidth:2.5,pointRadius:3,pointBackgroundColor:col,stepped:'before',fill:false,spanGaps:false,datalabels:{display:midLabels(data),color:col,font:{size:10,weight:'bold'},anchor:'end',align:'top',formatter:v=>v?v.toFixed(2)+'€':''}});
+      const ds=[];
+      if(lineFilter==='all3'||lineFilter==='luce')ds.push(mkDs(t('luce'),dL,'#f59e0b','rgba(245,158,11,.1)'));
+      if(lineFilter==='all3'||lineFilter==='acqua')ds.push(mkDs(t('acqua'),dA,'#06b6d4','rgba(6,182,212,.1)'));
+      if(lineFilter==='all3'||lineFilter==='gas')ds.push(mkDs('Gas',dG,'#f43f5e','rgba(244,63,94,.1)'));
+      chart=new Chart(cv,{type:'line',data:{labels:days,datasets:ds},options:{...bOpt({display:false}),scales:{y:{beginAtZero:true,grid:{color:'#f1f5f9'},ticks:{font:{size:9},callback:v=>v+'€'}},x:{grid:{display:false},ticks:{font:{size:9},autoSkip:true,maxTicksLimit:10}}}}});
+    }
   }else if(curTab==='pie'){
     $('chTit').textContent=t('tPie');
     let sL=0,sA=0,sG=0;recs.forEach(r=>{sL+=r.luce;sA+=r.acqua;sG+=r.gas});
